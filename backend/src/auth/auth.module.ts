@@ -44,6 +44,7 @@ import { RolesGuard } from './guards/roles.guard';
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
   ],
-  exports: [AuthService],
+  // ThrottlerModule exporté : réutilisé (ThrottlerGuard) par les routes publiques d'invitation.
+  exports: [AuthService, ThrottlerModule],
 })
 export class AuthModule {}

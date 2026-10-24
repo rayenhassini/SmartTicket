@@ -1,17 +1,16 @@
-
 -- =====================================================================
 -- SmartTicket — Migration 001 (Phase 2) : équipes et responsable
 -- ADDITIVE UNIQUEMENT : crée 3 tables. Ne modifie, ne supprime et ne
 -- déplace aucune donnée ni aucune table existante (ENUM inchangés ;
 -- tickets.supervisor_id, ticket_technicians et users.team_leader sont
 -- conservés tels quels, dépréciés mais non supprimés).
--- À exécuter MANUELLEMENT, une fois, sur la base smartticket_v1_smoketest :
---     mysql -u root smartticket_v1_smoketest < database/migrations/001_phase2_teams_smoketest.sql
+-- À exécuter MANUELLEMENT, une fois, sur la base smartticket_v1 :
+--     mysql -u root -p smartticket_v1 < database/migrations/001_phase2_teams.sql
 -- Rejouable sans effet (CREATE TABLE IF NOT EXISTS).
 -- Non inclus volontairement : tickets.team_id (phase 5a).
 -- =====================================================================
 
-USE smartticket_v1_smoketest;
+USE smartticket_v1;
 
 -- ---------------------------------------------------------------------
 -- teams : une équipe a au plus un responsable (leader_id, NULL si vide).

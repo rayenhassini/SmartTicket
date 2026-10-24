@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { homeFor } from "@/lib/home";
 import { useAuth } from "@/context/auth-context";
 import { bootstrap } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api-client";
@@ -47,7 +48,7 @@ export default function SetupPage() {
         authority: form.authority,
       });
       startSession(res);
-      router.replace("/tickets");
+      router.replace(homeFor(res.user));
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
         setAlreadyDone(true);

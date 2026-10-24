@@ -24,3 +24,11 @@ export function bootstrap(payload: BootstrapPayload) {
     skipAuthRedirect: true,
   });
 }
+
+export function forgotPassword(email: string) {
+  return apiFetch<{ message: string }>("/auth/forgot-password", { method: "POST", body: { email }, skipAuthRedirect: true });
+}
+
+export function resetPassword(payload: { token: string; password: string; passwordConfirm: string }) {
+  return apiFetch<{ message: string }>("/auth/reset-password", { method: "POST", body: payload, skipAuthRedirect: true });
+}

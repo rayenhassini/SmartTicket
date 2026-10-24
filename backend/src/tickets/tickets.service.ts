@@ -1,6 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { Team } from '../teams/entities/team.entity';
+import { TicketStatus } from '../common/enums/ticket-status.enum';
 import { Ticket } from './entities/ticket.entity';
 import { User } from '../users/entities/user.entity';
 import { Solution } from '../solutions/entities/solution.entity';
@@ -15,7 +17,8 @@ import { AssignTechnicianDto } from './dto/assign-technicians.dto';
 import { SetSupervisorDto } from './dto/set-supervisor.dto';
 import { LinkSolutionDto } from './dto/link-solution.dto';
 
-const TICKET_RELATIONS = [
+export const TICKET_RELATIONS = [
+  'team',
   'solution',
   'client',
   'contract',
@@ -127,7 +130,38 @@ export class TicketsService {
   async updateStatus(id: number, dto: UpdateTicketStatusDto): Promise<Ticket> {
     const entity = await this.findOne(id);
     entity.status = dto.status;
+    // Dates de cycle de vie : posées une seule fois (jamais écrasées), sans autre effet.
+    const now = new Date();
+    if (dto.status === TicketStatus.ASSIGNED && !entity.assignedDate) entity.assignedDate = now;
+    if (dto.status === TicketStatus.IN_PROGRESS && !entity.takenDate) entity.takenDate = now;
+    if (dto.status === TicketStatus.RESOLVED && !entity.resolvedDate) entity.resolvedDate = now;
+    if (dto.status === TicketStatus.CLOSED && !entity.closedDate) entity.closedDate = now;
     return this.ticketsRepository.save(entity);
+  }
+
+  // PMO : assigne le ticket à UNE équipe complète (tous ses membres le voient). Un ticket « Not Assigned »
+  // passe à « Assigned ». Le changement d'équipe est refusé une fois le ticket Resolved / Closed / Deleted.
+  async assignTeam(id: number, teamId: number): Promise<Ticket> {
+    const entity = await this.findOne(id);
+    const team = await this.ticketsRepository.manager.findOne(Team, { where: { id: teamId } });
+    if (!team) throw new NotFoundException(`Équipe ${teamId} introuvable.`);
+    if (String(entity.teamId ?? '') === String(team.id)) return entity;
+    if ([TicketStatus.RESOLVED, TicketStatus.CLOSED, TicketStatus.DELETED].includes(entity.status)) {
+      throw new ConflictException({
+        statusCode: 409,
+        error: 'Conflict',
+        code: 'TICKET_NOT_REASSIGNABLE',
+        message: `Impossible de changer l'équipe d'un ticket au statut « ${entity.status} ».`,
+      });
+    }
+    entity.team = team;
+    entity.teamId = team.id;
+    if (entity.status === TicketStatus.NOT_ASSIGNED) {
+      entity.status = TicketStatus.ASSIGNED;
+      if (!entity.assignedDate) entity.assignedDate = new Date();
+    }
+    await this.ticketsRepository.save(entity);
+    return this.findOne(id);
   }
 
   async assignTechnician(id: number, dto: AssignTechnicianDto): Promise<Ticket> {

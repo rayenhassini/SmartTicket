@@ -100,6 +100,8 @@ export interface Ticket {
   takenDate?: string | null;
   closedDate?: string | null;
   caseId?: string | null;
+  teamId?: Id | null;
+  team?: { id: Id; name: string } | null;
   solution?: Solution | null;
   client?: User | null;
   contract?: Contract | null;
@@ -178,3 +180,44 @@ export interface TeamTechnician {
   teamId: number | null;
   teamName: string | null;
 }
+
+// ---- Phase 3 : invitations technicien -------------------------------------
+export type InvitationStatus = "pending" | "accepted" | "expired" | "cancelled";
+
+export interface InvitationView {
+  id: number;
+  email: string;
+  authority: "technician";
+  teamId: number;
+  teamName: string | null;
+  status: InvitationStatus;
+  invitedBy: string | null;
+  expiresAt: string;
+  acceptedAt: string | null;
+  createdAt: string;
+}
+
+// Réponse de création : `devLink` n'existe qu'en mode log (développement, aucun email envoyé).
+export interface CreatedInvitation extends InvitationView {
+  mailMode: "smtp" | "log";
+  devLink?: string;
+}
+
+export interface InvitationPreview {
+  email: string;
+  teamName: string;
+  expiresAt: string;
+}
+
+// ---- Espace technicien (routes /me/tickets) --------------------------------
+export interface MyTicketsResponse {
+  isLeader: boolean;
+  teamId: number | null;
+  tickets: Ticket[];
+}
+export interface MyTicketResponse {
+  isLeader: boolean;
+  ticket: Ticket;
+}
+// Statuts que le responsable peut poser (miroir de LEADER_STATUSES côté API).
+export const LEADER_STATUSES: TicketStatus[] = ["In Progress", "On Hold", "Resolved", "Closed", "Deleted"];

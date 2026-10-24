@@ -12,7 +12,7 @@ export class ApiError extends Error {
 }
 
 interface ApiOptions {
-  method?: "GET" | "POST" | "PATCH" | "DELETE";
+  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown;
   // Pour /auth/login et /auth/bootstrap : un 401/409 est une erreur de formulaire,
   // pas une session expirée -> pas de redirection automatique.

@@ -13,7 +13,10 @@ import { ContractsModule } from './contracts/contracts.module';
 import { SitesModule } from './sites/sites.module';
 import { TypeSupportsModule } from './type-supports/type-supports.module';
 import { TeamsModule } from './teams/teams.module';
-// update module
+import { MyTicketsModule } from './my-tickets/my-tickets.module';
+import { InvitationsModule } from './invitations/invitations.module';
+import { PasswordResetModule } from './password-reset/password-reset.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -32,6 +35,9 @@ import { TeamsModule } from './teams/teams.module';
     SolutionsModule,
     TicketsModule,
     TeamsModule,
+    InvitationsModule,
+    MyTicketsModule,
+    PasswordResetModule,
   ],
 })
 export class AppModule {}

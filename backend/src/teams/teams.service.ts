@@ -26,7 +26,7 @@ const personName = (u?: Pick<User, 'firstName' | 'lastName'> | null) =>
   u ? `${u.firstName} ${u.lastName}` : null;
 
 // Résultat interne d'une opération transactionnelle : sert à notifier APRÈS le commit.
-interface OperationOutcome {
+export interface OperationOutcome {
   team: Team;
   events: TeamLeaderEvent[];
   staffingBefore?: StaffingLevel;
@@ -147,14 +147,19 @@ export class TeamsService {
     return this.findOne(id);
   }
 
-  // Suppression : uniquement si 0 membre. Aucun lien équipe ↔ ticket n'existe en Phase 2
-  // (tickets.team_id arrive en phase 5a) : 0 membre suffit. L'historique des événements part avec l'équipe.
+  // Suppression : uniquement si 0 membre ET 0 ticket assigné (tickets.team_id, migration 003).
+  // L'historique des événements part avec l'équipe.
   async remove(id: number): Promise<void> {
     await this.dataSource.transaction(async (m) => {
       const team = await this.lockTeam(m, id);
       const count = await m.count(TeamMember, { where: { teamId: team.id } });
       if (count > 0) {
         throw conflict('TEAM_NOT_EMPTY', `Impossible de supprimer l'équipe « ${team.name} » : elle compte encore ${count} membre(s).`);
+      }
+      // Migration 003 : une équipe qui porte des tickets ne se supprime pas (FK RESTRICT).
+      const [{ c }] = await m.query('SELECT COUNT(*) AS c FROM tickets WHERE team_id = ?', [team.id]);
+      if (Number(c) > 0) {
+        throw conflict('TEAM_HAS_TICKETS', `Impossible de supprimer l'équipe « ${team.name} » : ${c} ticket(s) lui sont assignés.`);
       }
       await m.delete(Team, { id: team.id });
     });
@@ -163,33 +168,39 @@ export class TeamsService {
   // ------------------------------------------------------------------ membres
 
   async addMember(teamId: number, userId: number) {
-    const outcome = await this.runWrite(async (m) => {
-      const team = await this.lockTeam(m, teamId);
-      const user = await m.findOne(User, { where: { id: userId } });
-      if (!user) throw new NotFoundException(`Utilisateur ${userId} introuvable.`);
-      if (user.authority !== UserAuthority.TECHNICIAN) {
-        throw new BadRequestException('Seuls les techniciens peuvent être membres d’une équipe.');
-      }
-      if (!user.valid) throw new BadRequestException('Ce compte est désactivé : impossible de l’ajouter à une équipe.');
-
-      const existing = await m.findOne(TeamMember, { where: { userId }, relations: ['team'] });
-      if (existing) {
-        throw sameId(existing.teamId, teamId)
-          ? conflict('ALREADY_MEMBER', 'Cet utilisateur est déjà membre de cette équipe.')
-          : conflict('ALREADY_IN_OTHER_TEAM', `Cet utilisateur est déjà membre de l'équipe « ${existing.team?.name} » : utilisez le transfert.`);
-      }
-
-      const before = await m.count(TeamMember, { where: { teamId: team.id } });
-      await m.insert(TeamMember, { teamId: team.id, userId, joinedAt: new Date() });
-
-      // 1er membre d'une équipe vide → responsable automatique.
-      const events: TeamLeaderEvent[] = [];
-      if (team.leaderId === null || team.leaderId === undefined) {
-        events.push(await this.assignLeader(m, team, userId, before === 0 ? LeaderEventReason.FIRST_MEMBER : LeaderEventReason.AUTO_SUCCESSION, null));
-      }
-      return { team, events } as OperationOutcome; // croissance : jamais d'email d'effectif
-    });
+    const outcome = await this.runWrite((m) => this.addMemberWithin(m, teamId, userId));
     return this.afterWrite(outcome, teamId);
+  }
+
+  // Cœur de l'ajout d'un membre, À L'INTÉRIEUR d'une transaction fournie par l'appelant
+  // (même code pour POST /teams/:id/members et pour l'acceptation d'une invitation : les
+  // règles de la Phase 2 — verrou d'équipe, UNIQUE(user_id), 1er membre = responsable —
+  // ne sont jamais dupliquées).
+  async addMemberWithin(m: EntityManager, teamId: number, userId: number): Promise<OperationOutcome> {
+    const team = await this.lockTeam(m, teamId);
+    const user = await m.findOne(User, { where: { id: userId } });
+    if (!user) throw new NotFoundException(`Utilisateur ${userId} introuvable.`);
+    if (user.authority !== UserAuthority.TECHNICIAN) {
+      throw new BadRequestException('Seuls les techniciens peuvent être membres d’une équipe.');
+    }
+    if (!user.valid) throw new BadRequestException('Ce compte est désactivé : impossible de l’ajouter à une équipe.');
+
+    const existing = await m.findOne(TeamMember, { where: { userId }, relations: ['team'] });
+    if (existing) {
+      throw sameId(existing.teamId, teamId)
+        ? conflict('ALREADY_MEMBER', 'Cet utilisateur est déjà membre de cette équipe.')
+        : conflict('ALREADY_IN_OTHER_TEAM', `Cet utilisateur est déjà membre de l'équipe « ${existing.team?.name} » : utilisez le transfert.`);
+    }
+
+    const before = await m.count(TeamMember, { where: { teamId: team.id } });
+    await m.insert(TeamMember, { teamId: team.id, userId, joinedAt: new Date() });
+
+    // 1er membre d'une équipe vide → responsable automatique.
+    const events: TeamLeaderEvent[] = [];
+    if (team.leaderId === null || team.leaderId === undefined) {
+      events.push(await this.assignLeader(m, team, userId, before === 0 ? LeaderEventReason.FIRST_MEMBER : LeaderEventReason.AUTO_SUCCESSION, null));
+    }
+    return { team, events }; // croissance : jamais d'email d'effectif
   }
 
   async removeMember(teamId: number, userId: number) {

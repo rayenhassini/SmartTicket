@@ -1,7 +1,21 @@
-import { redirect } from "next/navigation";
+"use client";
 
-// F1 : pas de dashboard. La racine redirige vers la liste des tickets
-// (AuthGuard renverra vers /login si aucune session).
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/auth-context";
+import { homeFor } from "@/lib/home";
+import { Spinner } from "@/components/ui";
+
+// Racine : redirige vers l'espace du rôle connecté, ou vers /login sans session.
 export default function Home() {
-  redirect("/tickets");
+  const { ready, token, user } = useAuth();
+  const router = useRouter();
+  useEffect(() => {
+    if (ready) router.replace(token && user ? homeFor(user) : "/login");
+  }, [ready, token, user, router]);
+  return (
+    <div className="flex min-h-screen items-center justify-center">
+      <Spinner label="Chargement…" />
+    </div>
+  );
 }

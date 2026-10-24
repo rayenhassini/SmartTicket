@@ -36,7 +36,6 @@ export default function TicketForm({ mode, initial, submitLabel, onSubmit, onCan
   // Création uniquement : à l'édition, superviseur/techniciens/solution se gèrent depuis le détail.
   const [supervisorId, setSupervisorId] = useState("");
   const [solutionId, setSolutionId] = useState("");
-  const [technicianIds, setTechnicianIds] = useState<string[]>([]);
 
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -74,7 +73,6 @@ export default function TicketForm({ mode, initial, submitLabel, onSubmit, onCan
     if (mode === "create") {
       if (supervisorId) payload.supervisorId = toNum(supervisorId);
       if (solutionId) payload.solutionId = toNum(solutionId);
-      if (technicianIds.length) payload.technicianIds = technicianIds.map(Number);
     }
 
     setSaving(true);
@@ -152,26 +150,10 @@ export default function TicketForm({ mode, initial, submitLabel, onSubmit, onCan
               <div className="grid gap-4 sm:grid-cols-2">
                 <Select id="supervisor" label="Superviseur" value={supervisorId} onChange={setSupervisorId} options={technicians.map((u) => ({ value: String(u.id), label: userLabel(u) }))} />
                 <Select id="solution" label="Solution" value={solutionId} onChange={setSolutionId} options={(lookups?.solutions ?? []).map((s) => ({ value: String(s.id), label: solutionLabel(s) }))} />
-                <div className="sm:col-span-2">
-                  <label htmlFor="technicians" className="label">Techniciens assignés (Ctrl/Cmd + clic pour plusieurs)</label>
-                  <select
-                    id="technicians"
-                    multiple
-                    size={Math.min(6, Math.max(3, technicians.length))}
-                    className="input"
-                    value={technicianIds}
-                    onChange={(e) => setTechnicianIds(Array.from(e.target.selectedOptions).map((o) => o.value))}
-                  >
-                    {technicians.map((u) => (
-                      <option key={String(u.id)} value={String(u.id)}>{userLabel(u)}</option>
-                    ))}
-                  </select>
-                  {technicians.length === 0 && <p className="mt-1 text-xs text-slate-500">Aucun technicien enregistré pour l&apos;instant.</p>}
-                </div>
               </div>
             ) : (
               <p className="text-xs text-slate-500">
-                Techniciens, superviseur et solution se modifient depuis la page de détail du ticket. Une relation déjà définie ne peut pas être vidée depuis ce formulaire.
+                L'équipe, le superviseur et la solution se définissent depuis la page de détail du ticket. Une relation déjà définie ne peut pas être vidée depuis ce formulaire.
               </p>
             )}
           </>

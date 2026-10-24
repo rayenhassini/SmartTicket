@@ -27,3 +27,7 @@ export const setSupervisor = (id: Id, supervisorId: number) =>
 
 export const linkSolution = (id: Id, solutionId: number) =>
   apiFetch<Ticket>(`/tickets/${id}/solution`, { method: "PATCH", body: { solutionId } });
+
+// Phase 3b : le PMO assigne une équipe complète (Not Assigned → Assigned).
+export const assignTeam = (id: Id, teamId: Id) =>
+  apiFetch<Ticket>(`/tickets/${id}/team`, { method: "PATCH", body: { teamId: Number(teamId) } });

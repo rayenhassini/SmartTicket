@@ -2,21 +2,27 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { homeFor } from "@/lib/home";
 import { useAuth } from "@/context/auth-context";
 
 // F1 : seul le module Tickets est actif. Les autres entrées sont visibles mais désactivées
 // (pages prévues en F2/F3). Pas de masquage par rôle en V1 : tout utilisateur authentifié voit tout.
 const NAV: { label: string; href: string; enabled: boolean; roles?: string[] }[] = [
-  { label: "Tickets", href: "/tickets", enabled: true },
+  { label: "Tickets", href: "/tickets", enabled: true, roles: ["pmo"] },
+  // Espace technicien (Phase 3b) : tickets de son équipe et membres.
+  { label: "Mes tickets", href: "/my/tickets", enabled: true, roles: ["technician"] },
+  { label: "Mon équipe", href: "/my/team", enabled: true, roles: ["technician"] },
   // Phase 2 : les équipes sont réservées au PMO (le backend refuse les autres rôles en 403).
   { label: "Équipes", href: "/teams", enabled: true, roles: ["pmo"] },
-  { label: "Utilisateurs", href: "/users", enabled: false },
-  { label: "Solutions", href: "/solutions", enabled: false },
-  { label: "Contrats", href: "/contracts", enabled: false },
-  { label: "Équipements", href: "/equipment", enabled: false },
-  { label: "Logiciels", href: "/equipment-softs", enabled: false },
-  { label: "Sites", href: "/sites", enabled: false },
-  { label: "Types de support", href: "/type-supports", enabled: false },
+  // Phase 3 : invitations de techniciens (PMO uniquement ; le backend refuse les autres en 403).
+  { label: "Invitations", href: "/invitations", enabled: true, roles: ["pmo"] },
+  { label: "Utilisateurs", roles: ["pmo"], href: "/users", enabled: false },
+  { label: "Solutions", roles: ["pmo"], href: "/solutions", enabled: false },
+  { label: "Contrats", roles: ["pmo"], href: "/contracts", enabled: false },
+  { label: "Équipements", roles: ["pmo"], href: "/equipment", enabled: false },
+  { label: "Logiciels", roles: ["pmo"], href: "/equipment-softs", enabled: false },
+  { label: "Sites", roles: ["pmo"], href: "/sites", enabled: false },
+  { label: "Types de support", roles: ["pmo"], href: "/type-supports", enabled: false },
 ];
 
 export default function Shell({ children }: { children: React.ReactNode }) {
@@ -32,7 +38,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col">
       <header className="flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-6">
-        <Link href="/tickets" className="text-lg font-bold text-brand-700">
+        <Link href={homeFor(user)} className="text-lg font-bold text-brand-700">
           SmartTicket
         </Link>
         <div className="flex items-center gap-4 text-sm">

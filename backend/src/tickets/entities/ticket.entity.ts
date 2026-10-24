@@ -10,6 +10,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { TicketStatus } from '../../common/enums/ticket-status.enum';
+import { Team } from '../../teams/entities/team.entity';
 import { Solution } from '../../solutions/entities/solution.entity';
 import { User } from '../../users/entities/user.entity';
 import { Contract } from '../../contracts/entities/contract.entity';
@@ -66,6 +67,15 @@ export class Ticket {
 
   @Column({ name: 'case_id', length: 100, nullable: true })
   caseId?: string;
+
+  // Migration 003 : un ticket est assigné à UNE équipe (tous ses membres le voient).
+  // NULL = pas encore assigné à une équipe. RESTRICT : une équipe qui porte des tickets ne se supprime pas.
+  @Column({ name: 'team_id', type: 'bigint', unsigned: true, nullable: true })
+  teamId?: number | null;
+
+  @ManyToOne(() => Team, { onDelete: 'RESTRICT', nullable: true })
+  @JoinColumn({ name: 'team_id' })
+  team?: Team | null;
 
   @ManyToOne(() => Solution, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'solution_id' })

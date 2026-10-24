@@ -18,7 +18,7 @@ async function bootstrap() {
   // CORS restreint aux origines déclarées (CORS_ORIGINS, séparées par des virgules).
   app.enableCors({
     origin: configService.get<string[]>('cors.origins'),
-    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Authorization', 'Content-Type'],
     maxAge: 600,
   });

@@ -4,18 +4,18 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import {
-  assignTechnician,
+  assignTeam,
   deleteTicket,
   getTicket,
   linkSolution,
-  removeTechnician,
   setSupervisor,
   updateTicketStatus,
 } from "@/lib/api/tickets";
+import { listTeams } from "@/lib/api/teams";
 import { listSolutions, listUsers, solutionLabel, userLabel } from "@/lib/api/lookups";
 import { ApiError } from "@/lib/api-client";
 import { errorMessage, formatDate, fullName, STATUS_LABELS } from "@/lib/format";
-import { TICKET_STATUSES, type Solution, type Ticket, type TicketStatus, type User } from "@/lib/types";
+import { TICKET_STATUSES, type Solution, type TeamSummary, type Ticket, type TicketStatus, type User } from "@/lib/types";
 import { ErrorBanner, PageHeader, Spinner, StatusBadge, SuccessBanner } from "@/components/ui";
 
 export default function TicketDetailPage() {
@@ -25,13 +25,14 @@ export default function TicketDetailPage() {
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   const [solutions, setSolutions] = useState<Solution[]>([]);
+  const [teams, setTeams] = useState<TeamSummary[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const [statusDraft, setStatusDraft] = useState<TicketStatus>("Not Assigned");
-  const [techDraft, setTechDraft] = useState("");
+  const [teamDraft, setTeamDraft] = useState("");
   const [supervisorDraft, setSupervisorDraft] = useState("");
   const [solutionDraft, setSolutionDraft] = useState("");
 
@@ -46,6 +47,7 @@ export default function TicketDetailPage() {
     // Les listes de choix sont secondaires : leur échec n'empêche pas d'afficher le ticket.
     listUsers().then(setUsers).catch(() => setUsers([]));
     listSolutions().then(setSolutions).catch(() => setSolutions([]));
+    listTeams().then(setTeams).catch(() => setTeams([]));
   }, [id]);
   useEffect(load, [load]);
 
@@ -91,9 +93,6 @@ export default function TicketDetailPage() {
   if (!ticket) return <Spinner label="Chargement du ticket…" />;
 
   const technicians = users.filter((u) => u.authority === "technician");
-  const assignedIds = new Set(ticket.technicians.map((t) => String(t.id)));
-  const assignable = technicians.filter((u) => !assignedIds.has(String(u.id)));
-
   return (
     <div className="max-w-4xl space-y-6">
       <PageHeader
@@ -148,43 +147,26 @@ export default function TicketDetailPage() {
       </section>
 
       <section className="card space-y-3">
-        <h2 className="font-semibold text-slate-900">Techniciens assignés</h2>
-        {ticket.technicians.length === 0 ? (
-          <p className="text-sm text-slate-500">Aucun technicien assigné.</p>
-        ) : (
-          <ul className="divide-y divide-slate-100 text-sm">
-            {ticket.technicians.map((t) => (
-              <li key={String(t.id)} className="flex items-center justify-between py-2">
-                <span>{userLabel(t)}</span>
-                <button
-                  className="text-red-600 hover:underline disabled:opacity-50"
-                  disabled={busy}
-                  onClick={() => run(() => removeTechnician(id, t.id), "Technicien retiré.")}
-                >
-                  Retirer
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-        <div className="flex flex-wrap items-center gap-3 pt-2">
-          <select className="input max-w-sm" value={techDraft} onChange={(e) => setTechDraft(e.target.value)} aria-label="Technicien à ajouter">
-            <option value="">— Choisir un technicien —</option>
-            {assignable.map((u) => (
-              <option key={String(u.id)} value={String(u.id)}>{userLabel(u)}</option>
+        <h2 className="font-semibold text-slate-900">Équipe assignée</h2>
+        <p className="text-sm text-slate-700">
+          {ticket.team ? <>Ce ticket est assigné à l&apos;équipe <b>{ticket.team.name}</b> : tous ses membres le voient dans leur espace technicien.</> : "Aucune équipe assignée : le ticket n'est visible d'aucun technicien."}
+        </p>
+        <div className="flex flex-wrap items-center gap-3">
+          <select className="input max-w-sm" value={teamDraft} onChange={(e) => setTeamDraft(e.target.value)} aria-label="Équipe à assigner">
+            <option value="">— Choisir une équipe —</option>
+            {teams.filter((t) => String(t.id) !== String(ticket.team?.id ?? "")).map((t) => (
+              <option key={String(t.id)} value={String(t.id)}>{t.name} ({t.memberCount} membre{t.memberCount > 1 ? "s" : ""})</option>
             ))}
           </select>
           <button
             className="btn-secondary"
-            disabled={busy || !techDraft}
-            onClick={() => run(async () => { await assignTechnician(id, Number(techDraft)); setTechDraft(""); }, "Technicien assigné.")}
+            disabled={busy || !teamDraft}
+            onClick={() => run(async () => { await assignTeam(id, teamDraft); setTeamDraft(""); }, "Équipe assignée (statut « Assigné » si le ticket n'était pas assigné).")}
           >
-            Assigner
+            {ticket.team ? "Changer d'équipe" : "Assigner l'équipe"}
           </button>
         </div>
-        {technicians.length === 0 && (
-          <p className="text-xs text-slate-500">Aucun utilisateur de rôle « technician » n&apos;existe encore. Ils se créent via l&apos;API (POST /users) en attendant la page Utilisateurs de la phase F2.</p>
-        )}
+        {teams.length === 0 && <p className="text-xs text-slate-500">Aucune équipe : créez-en une dans « Équipes ».</p>}
       </section>
 
       <section className="card space-y-3">

@@ -23,4 +23,27 @@ export default () => ({
     loginLimit: parseInt(process.env.LOGIN_RATE_LIMIT ?? '10', 10),
     loginTtl: parseInt(process.env.LOGIN_RATE_TTL ?? '60', 10),
   },
+  // Phase 3 : base du lien d'invitation (frontend) et durée de validité.
+  frontend: {
+    baseUrl: (process.env.FRONTEND_URL ?? 'http://localhost:3000').replace(/\/+$/, ''),
+  },
+  invitation: {
+    ttlHours: parseInt(process.env.INVITATION_TTL_HOURS ?? '72', 10),
+  },
+  // Durée de validité du lien « mot de passe oublié » (minutes).
+  passwordReset: {
+    ttlMinutes: parseInt(process.env.PASSWORD_RESET_TTL_MINUTES ?? '60', 10),
+  },
+  // Mode « smtp » = envoi réel (Gmail ou autre) ; mode « log » = le lien est écrit dans la console.
+  // Sans MAIL_MODE explicite : smtp si MAIL_USER et MAIL_PASSWORD sont renseignés, sinon log.
+  mail: {
+    mode: (process.env.MAIL_MODE ?? (process.env.MAIL_USER && process.env.MAIL_PASSWORD ? 'smtp' : 'log')) as 'smtp' | 'log',
+    host: process.env.MAIL_HOST ?? 'smtp.gmail.com',
+    port: parseInt(process.env.MAIL_PORT ?? '465', 10),
+    // Défaut : TLS implicite sur 465 ; STARTTLS (secure=false) sur 587.
+    secure: process.env.MAIL_SECURE !== undefined ? process.env.MAIL_SECURE === 'true' : parseInt(process.env.MAIL_PORT ?? '465', 10) === 465,
+    user: process.env.MAIL_USER ?? '',
+    password: process.env.MAIL_PASSWORD ?? '',
+    from: process.env.MAIL_FROM ?? (process.env.MAIL_USER ? `SmartTicket <${process.env.MAIL_USER}>` : 'SmartTicket <no-reply@localhost>'),
+  },
 });

@@ -16,24 +16,24 @@ export default function TicketsPage() {
   const [search, setSearch] = useState("");
 
   const load = useCallback(() => {
-      setError(null);
-      setTickets(null);
+    setError(null);
+    setTickets(null);
     listTickets().then(setTickets).catch((e) => setError(errorMessage(e)));
   }, []);
   useEffect(load, [load]);
 
   // Filtrage/tri côté client : le backend n'expose pas de paramètres de filtre en V1.
   const visible = useMemo(() => {
-      if (!tickets) return [];
-      const q = search.trim().toLowerCase();
-      return tickets
-        .filter((t) => !statusFilter || t.status === statusFilter)
-        .filter((t) => !q || t.number.toLowerCase().includes(q) || t.title.toLowerCase().includes(q))
-        .sort((a, b) => new Date(b.creationDate).getTime() - new Date(a.creationDate).getTime());
+    if (!tickets) return [];
+    const q = search.trim().toLowerCase();
+    return tickets
+      .filter((t) => !statusFilter || t.status === statusFilter)
+      .filter((t) => !q || t.number.toLowerCase().includes(q) || t.title.toLowerCase().includes(q))
+      .sort((a, b) => new Date(b.creationDate).getTime() - new Date(a.creationDate).getTime());
   }, [tickets, statusFilter, search]);
 
   return (
-  <div>
+    <div>
       <PageHeader
         title="Tickets"
         actions={<Link href="/tickets/new" className="btn-primary">Nouveau ticket</Link>}
@@ -54,14 +54,13 @@ export default function TicketsPage() {
           ))}
         </select>
       </div>
-      {/* fixed height */}
 
       {error ? (
         <ErrorBanner message={`Impossible de charger les tickets : ${error}`} onRetry={load} />
       ) : !tickets ? (
         <Spinner label="Chargement des tickets…" />
       ) : tickets.length === 0 ? (
-         <EmptyState title="Aucun ticket pour le moment">
+        <EmptyState title="Aucun ticket pour le moment">
           <Link href="/tickets/new" className="font-medium text-brand-600 underline">Créer le premier ticket</Link>
         </EmptyState>
       ) : visible.length === 0 ? (
@@ -75,7 +74,7 @@ export default function TicketsPage() {
                 <th className="px-4 py-3">Titre</th>
                 <th className="px-4 py-3">Statut</th>
                 <th className="px-4 py-3">Client</th>
-                <th className="px-4 py-3">Superviseur</th>
+                <th className="px-4 py-3">Équipe</th>
                 <th className="px-4 py-3">Créé le</th>
               </tr>
             </thead>
@@ -92,7 +91,7 @@ export default function TicketsPage() {
                   <td className="max-w-xs truncate px-4 py-3">{t.title}</td>
                   <td className="px-4 py-3"><StatusBadge status={t.status} /></td>
                   <td className="px-4 py-3">{fullName(t.client)}</td>
-                  <td className="px-4 py-3">{fullName(t.supervisor)}</td>
+                  <td className="px-4 py-3">{t.team?.name ?? <span className="text-slate-400">—</span>}</td>
                   <td className="whitespace-nowrap px-4 py-3 text-slate-500">{formatDate(t.creationDate)}</td>
                 </tr>
               ))}

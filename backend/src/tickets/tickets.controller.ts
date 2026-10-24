@@ -12,6 +12,7 @@ import { TicketsService } from './tickets.service';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { UpdateTicketStatusDto } from './dto/update-ticket-status.dto';
+import { AssignTeamDto } from './dto/assign-team.dto';
 import { AssignTechnicianDto } from './dto/assign-technicians.dto';
 import { SetSupervisorDto } from './dto/set-supervisor.dto';
 import { LinkSolutionDto } from './dto/link-solution.dto';
@@ -54,6 +55,12 @@ export class TicketsController {
     @Body() dto: UpdateTicketStatusDto,
   ) {
     return this.service.updateStatus(id, dto);
+  }
+
+  // Phase 3b : le PMO assigne une ÉQUIPE (et non plus un technicien isolé) ; Not Assigned → Assigned.
+  @Patch(':id/team')
+  assignTeam(@Param('id', ParseIntPipe) id: number, @Body() dto: AssignTeamDto) {
+    return this.service.assignTeam(id, dto.teamId);
   }
 
   @Post(':id/technicians')
