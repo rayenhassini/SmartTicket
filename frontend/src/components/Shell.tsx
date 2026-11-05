@@ -12,10 +12,14 @@ const NAV: { label: string; href: string; enabled: boolean; roles?: string[] }[]
   // Espace technicien (Phase 3b) : tickets de son équipe et membres.
   { label: "Mes tickets", href: "/my/tickets", enabled: true, roles: ["technician"] },
   { label: "Mon équipe", href: "/my/team", enabled: true, roles: ["technician"] },
+  // Espace client (Phase 4) : lecture seule de SES tickets.
+  { label: "Mes tickets", href: "/client/tickets", enabled: true, roles: ["client"] },
   // Phase 2 : les équipes sont réservées au PMO (le backend refuse les autres rôles en 403).
   { label: "Équipes", href: "/teams", enabled: true, roles: ["pmo"] },
   // Phase 3 : invitations de techniciens (PMO uniquement ; le backend refuse les autres en 403).
   { label: "Invitations", href: "/invitations", enabled: true, roles: ["pmo"] },
+  // Phase 4 : invitations de clients (page séparée, PMO uniquement).
+  { label: "Invitations clients", href: "/client-invitations", enabled: true, roles: ["pmo"] },
   { label: "Utilisateurs", roles: ["pmo"], href: "/users", enabled: false },
   { label: "Solutions", roles: ["pmo"], href: "/solutions", enabled: false },
   { label: "Contrats", roles: ["pmo"], href: "/contracts", enabled: false },

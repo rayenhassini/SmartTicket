@@ -1,8 +1,9 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Team } from '../teams/entities/team.entity';
 import { TicketStatus } from '../common/enums/ticket-status.enum';
+import { UserAuthority } from '../common/enums/user-authority.enum';
 import { Ticket } from './entities/ticket.entity';
 import { User } from '../users/entities/user.entity';
 import { Solution } from '../solutions/entities/solution.entity';
@@ -29,6 +30,8 @@ export const TICKET_RELATIONS = [
   'technicians',
 ];
 
+const apiError = (statusCode: number, error: string, code: string, message: string) => ({ statusCode, error, code, message });
+
 @Injectable()
 export class TicketsService {
   constructor(
@@ -50,6 +53,10 @@ export class TicketsService {
       technicianIds,
       ...rest
     } = dto;
+
+    // Phase 4 : le client (s'il est donné) doit être un compte client actif ; un ticket externe exige un client.
+    await this.assertClientValid(clientId);
+    this.assertClientRule(rest.internalTask ?? false, clientId);
 
     const entity = this.ticketsRepository.create({
       ...rest,
@@ -100,6 +107,14 @@ export class TicketsService {
       ...rest
     } = dto;
 
+    await this.assertClientValid(clientId);
+    // Règle interne/externe (même règle qu'à la création). Appliquée quand la mise à jour touche au client
+    // ou au caractère interne du ticket (le formulaire PMO envoie toujours `internalTask`) : un champ sans
+    // rapport modifié par l'API (ex. titre seul) ne bloque pas un ticket historique sans client.
+    if (rest.internalTask !== undefined || clientId !== undefined) {
+      this.assertClientRule(rest.internalTask ?? entity.internalTask, clientId ?? (entity.client ? Number(entity.client.id) : undefined));
+    }
+
     Object.assign(entity, rest);
     if (clientId !== undefined) entity.client = clientId ? ({ id: clientId } as User) : undefined;
     if (contractId !== undefined)
@@ -146,6 +161,8 @@ export class TicketsService {
     const team = await this.ticketsRepository.manager.findOne(Team, { where: { id: teamId } });
     if (!team) throw new NotFoundException(`Équipe ${teamId} introuvable.`);
     if (String(entity.teamId ?? '') === String(team.id)) return entity;
+    // Ticket externe sans client (cas historique inclus) : pas d'assignation d'équipe tant qu'aucun client n'est défini.
+    this.assertClientRule(entity.internalTask, entity.client ? Number(entity.client.id) : undefined);
     if ([TicketStatus.RESOLVED, TicketStatus.CLOSED, TicketStatus.DELETED].includes(entity.status)) {
       throw new ConflictException({
         statusCode: 409,
@@ -162,6 +179,22 @@ export class TicketsService {
     }
     await this.ticketsRepository.save(entity);
     return this.findOne(id);
+  }
+
+  // Le client d'un ticket doit être un utilisateur actif d'authority « client » (la FK seule ne le garantit pas).
+  private async assertClientValid(clientId?: number): Promise<void> {
+    if (!clientId) return;
+    const client = await this.usersRepository.findOne({ where: { id: clientId, authority: UserAuthority.CLIENT, valid: true } });
+    if (!client) {
+      throw new BadRequestException(apiError(400, 'Bad Request', 'INVALID_CLIENT', `L'utilisateur ${clientId} n'est pas un compte client actif.`));
+    }
+  }
+
+  // Ticket EXTERNE (non interne, Helpdesk compris) : client obligatoire. Ticket INTERNE : client facultatif.
+  private assertClientRule(internalTask: boolean, clientId?: number): void {
+    if (!internalTask && !clientId) {
+      throw new ConflictException(apiError(409, 'Conflict', 'CLIENT_REQUIRED', "Un ticket externe doit avoir un client (cochez « Tâche interne » s'il n'en a pas)."));
+    }
   }
 
   async assignTechnician(id: number, dto: AssignTechnicianDto): Promise<Ticket> {

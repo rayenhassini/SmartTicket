@@ -4,6 +4,7 @@ import type { SessionUser } from "./types";
 export function homeFor(user: Pick<SessionUser, "authority"> | null | undefined): string {
   if (!user) return "/login";
   if (user.authority === "technician") return "/my/tickets";
+  if (user.authority === "client") return "/client/tickets";
   if (user.authority === "pmo") return "/tickets";
   return "/no-access";
 }

@@ -35,7 +35,7 @@ async function mkUser(pmo, authority, tag) {
   return { id: Number(r.data.id), email };
 }
 const mkTeam = async (pmo, tag) => (await call('POST', '/teams', { token: pmo, body: { name: `smoke4-${tag}-${run}` } })).data.id;
-const mkTicket = async (pmo, tag) => (await call('POST', '/tickets', { token: pmo, body: { number: `smoke4-${tag}-${run}`, title: `Ticket ${tag}`, description: 'smoke espace technicien' } })).data;
+const mkTicket = async (pmo, tag) => (await call('POST', '/tickets', { token: pmo, body: { number: `smoke4-${tag}-${run}`, title: `Ticket ${tag}`, description: 'smoke espace technicien', internalTask: true } })).data;
 const ids = (list) => list.tickets.map((t) => Number(t.id));
 
 (async () => {

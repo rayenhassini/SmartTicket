@@ -80,7 +80,7 @@ async function createUser(pmo, authority) {
   }
 
   console.log('\n4. Fix removeTechnician (base réelle)');
-  const created = await call('POST', '/tickets', { token: pmoToken, body: { number: `smoke-${run}-1`, title: 'Smoke removeTechnician', description: 'test' } });
+  const created = await call('POST', '/tickets', { token: pmoToken, body: { number: `smoke-${run}-1`, title: 'Smoke removeTechnician', description: 'test', internalTask: true } });
   expectStatus('PMO : POST /tickets → 201', created, 201);
   const ticketId = created.data && created.data.id;
   expectStatus('PMO : assigner le technicien → 201', await call('POST', `/tickets/${ticketId}/technicians`, { token: pmoToken, body: { technicianId: tech.id } }), 201);

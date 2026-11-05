@@ -11,6 +11,13 @@ export interface InvitationMail {
   expiresAt: Date;
 }
 
+export interface ClientInvitationMail {
+  to: string;
+  link: string;
+  invitedBy: string | null;
+  expiresAt: Date;
+}
+
 export interface PasswordResetMail {
   to: string;
   link: string;
@@ -67,6 +74,27 @@ export class MailService {
       html,
     });
     this.logger.log(`Invitation envoyée à ${mail.to} (smtp).`);
+    return { mode: 'smtp' };
+  }
+
+  async sendClientInvitation(mail: ClientInvitationMail): Promise<MailResult> {
+    const expires = mail.expiresAt.toLocaleString('fr-FR', { dateStyle: 'long', timeStyle: 'short' });
+    const subject = 'Invitation à votre espace client SmartTicket';
+    const text =
+      `Bonjour,\n\n${mail.invitedBy ?? 'Un responsable'} vous invite à créer votre espace client SmartTicket, ` +
+      `pour suivre vos tickets.\n\nPour créer votre compte, ouvrez ce lien :\n${mail.link}\n\n` +
+      `Ce lien est personnel et expire le ${expires}.\nSi vous n'êtes pas concerné, ignorez ce message.\n`;
+    const html =
+      `<p>Bonjour,</p><p>${escapeHtml(mail.invitedBy ?? 'Un responsable')} vous invite à créer votre espace client <b>SmartTicket</b> ` +
+      `pour suivre vos tickets.</p><p><a href="${escapeHtml(mail.link)}">Créer mon compte</a></p>` +
+      `<p style="color:#666">Lien personnel, valable jusqu'au ${escapeHtml(expires)}. Si vous n'êtes pas concerné, ignorez ce message.</p>`;
+
+    if (this.mode === 'log') {
+      this.logger.warn(`[MAIL-LOG] mode développement : aucun email envoyé. À: ${mail.to} — Lien d'invitation client : ${mail.link}`);
+      return { mode: 'log' };
+    }
+    await this.getTransporter().sendMail({ from: this.config.get<string>('mail.from'), to: mail.to, subject, text, html });
+    this.logger.log(`Invitation client envoyée à ${mail.to} (smtp).`);
     return { mode: 'smtp' };
   }
 

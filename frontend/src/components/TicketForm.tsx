@@ -64,6 +64,11 @@ export default function TicketForm({ mode, initial, submitLabel, onSubmit, onCan
       isHelpdesk,
       internalTask,
     };
+    // Règle Phase 4 : un ticket externe (« Tâche interne » décochée) exige un client ; l'API applique la même règle.
+    if (!internalTask && !clientId) {
+      setError("Choisissez le client du ticket (obligatoire pour un ticket externe) ou cochez « Tâche interne ».");
+      return;
+    }
     if (caseId.trim()) payload.caseId = caseId.trim();
     if (clientId) payload.clientId = toNum(clientId);
     if (contractId) payload.contractId = toNum(contractId);
@@ -139,7 +144,7 @@ export default function TicketForm({ mode, initial, submitLabel, onSubmit, onCan
         ) : (
           <>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Select id="client" label="Client" value={clientId} onChange={setClientId} options={clients.map((u) => ({ value: String(u.id), label: userLabel(u) }))} />
+              <Select id="client" label="Client" required={!internalTask} value={clientId} onChange={setClientId} options={clients.map((u) => ({ value: String(u.id), label: userLabel(u) }))} />
               <Select id="contract" label="Contrat" value={contractId} onChange={setContractId} options={(lookups?.contracts ?? []).map((c) => ({ value: String(c.id), label: contractLabel(c) }))} />
               <Select id="site" label="Site" value={siteId} onChange={setSiteId} options={(lookups?.sites ?? []).map((s) => ({ value: String(s.id), label: siteLabel(s) }))} />
               <Select id="equipment" label="Équipement (matériel)" value={equipmentId} onChange={setEquipmentId} options={(lookups?.equipment ?? []).map((x) => ({ value: String(x.id), label: equipmentLabel(x) }))} />
@@ -168,18 +173,19 @@ export default function TicketForm({ mode, initial, submitLabel, onSubmit, onCan
   );
 }
 
-function Select({ id, label, value, onChange, options }: {
+function Select({ id, label, value, onChange, options, required }: {
   id: string;
   label: string;
+  required?: boolean;
   value: string;
   onChange: (v: string) => void;
   options: { value: string; label: string }[];
 }) {
   return (
     <div>
-      <label htmlFor={id} className="label">{label}</label>
-      <select id={id} className="input" value={value} onChange={(e) => onChange(e.target.value)}>
-        <option value="">— Aucun —</option>
+      <label htmlFor={id} className="label">{label}{required ? " *" : ""}</label>
+      <select id={id} className="input" value={value} onChange={(e) => onChange(e.target.value)} aria-required={required || undefined}>
+        <option value="">{required ? "— Choisir —" : "— Aucun —"}</option>
         {options.map((o) => (
           <option key={o.value} value={o.value}>{o.label}</option>
         ))}

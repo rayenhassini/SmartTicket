@@ -100,6 +100,8 @@ immédiat ; le rôle appliqué est celui de la base, pas celui du token.
 | `/auth/login`, `/auth/bootstrap` | public | public | public | public |
 | `/users`, `/tickets`, `/solutions`, `/contracts`, `/sites`, `/equipment`, `/equipment-softs`, `/type-supports`, `/teams` (lectures et écritures) | oui | **403** | **403** | **403** |
 | `GET /teams/mine` (Phase 2 : sa propre équipe) | non | oui | **403** | **403** |
+| `/invitations` (créer, lister, annuler — Phase 3) | oui | **403** | **403** | **403** |
+| `GET /invitations/validate`, `POST /invitations/accept` (Phase 3, jeton secret, rate limit) | public | public | public | public |
 
 Les comptes `technician` et `client` peuvent se connecter mais n'accèdent à aucune
 donnée tant que les phases suivantes (équipes, périmètres) ne sont pas livrées.
@@ -116,10 +118,14 @@ Pour ouvrir une route à un autre rôle plus tard : ajouter ce rôle dans le
 ### Tests
 
 ```bash
-npm test                  # tests unitaires (guards, régression removeTechnician, effectif) ; + intégration équipes si TEST_DB_NAME (voir ../PHASE2.md)
+npm test                  # tests unitaires (guards, removeTechnician, effectif, mail SMTP local) ; + intégration équipes/invitations si TEST_DB_NAME (voir ../PHASE2.md, ../PHASE3.md)
 # Avec le backend lancé sur une base réelle :
 BASE_URL=http://localhost:3001 PMO_EMAIL=... PMO_PASSWORD=... npm run smoke:phase1
 BASE_URL=http://localhost:3001 PMO_EMAIL=... PMO_PASSWORD=... npm run smoke:phase2   # équipes (migration 001 requise)
+BASE_URL=http://localhost:3001 PMO_EMAIL=... PMO_PASSWORD=... npm run smoke:phase3   # invitations technicien (migration 002 requise, mode log OK)
+BASE_URL=http://localhost:3001 PMO_EMAIL=... PMO_PASSWORD=... npm run smoke:tech     # espace technicien (migration 003 requise, voir ../PHASE3B.md)
+BASE_URL=http://localhost:3001 PMO_EMAIL=... PMO_PASSWORD=... BACKEND_LOG=... npm run smoke:reset   # mot de passe oublié (migration 004, voir ../PHASE3C.md)
+BASE_URL=http://localhost:3001 PMO_EMAIL=... PMO_PASSWORD=... BACKEND_LOG=... DB_CMD=... npm run smoke:client   # espace client (migrations 005 et 006, voir ../PHASE4.md)
 CHECK_RATE_LIMIT=1 ...    # ajoute le test 429 (bloque ensuite l'IP quelques secondes)
 ```
 Le smoke test crée des comptes `smoke-…@example.com` et supprime ses tickets. Sans

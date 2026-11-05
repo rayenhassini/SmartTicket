@@ -209,6 +209,41 @@ export interface InvitationPreview {
   expiresAt: string;
 }
 
+// ---- Phase 4 : invitations client (aucune équipe) --------------------------
+export interface ClientInvitationView {
+  id: string; // UUID (CHAR(36))
+  email: string;
+  status: InvitationStatus;
+  invitedBy: string | null;
+  expiresAt: string;
+  acceptedAt: string | null;
+  createdAt: string;
+}
+export interface CreatedClientInvitation extends ClientInvitationView {
+  mailMode: "smtp" | "log";
+  devLink?: string;
+}
+export interface ClientInvitationPreview {
+  email: string;
+  expiresAt: string;
+}
+
+// ---- Espace client (routes /client/tickets) : vue RESTREINTE, lecture seule -
+export interface ClientTicket {
+  id: number;
+  number: string;
+  title: string;
+  description: string;
+  status: TicketStatus;
+  creationDate: string;
+  resolvedDate: string | null;
+  closedDate: string | null;
+  siteName: string | null;
+  solutionText: string | null;
+  // null = « Non assigné » (pas d'équipe, ou équipe sans responsable)
+  responsibleEmail: string | null;
+}
+
 // ---- Espace technicien (routes /me/tickets) --------------------------------
 export interface MyTicketsResponse {
   isLeader: boolean;

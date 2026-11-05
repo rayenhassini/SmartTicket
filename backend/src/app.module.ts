@@ -16,6 +16,8 @@ import { TeamsModule } from './teams/teams.module';
 import { MyTicketsModule } from './my-tickets/my-tickets.module';
 import { InvitationsModule } from './invitations/invitations.module';
 import { PasswordResetModule } from './password-reset/password-reset.module';
+import { ClientInvitationsModule } from './client-invitations/client-invitations.module';
+import { ClientTicketsModule } from './client-tickets/client-tickets.module';
 
 @Module({
   imports: [
@@ -38,6 +40,8 @@ import { PasswordResetModule } from './password-reset/password-reset.module';
     InvitationsModule,
     MyTicketsModule,
     PasswordResetModule,
+    ClientInvitationsModule,
+    ClientTicketsModule,
   ],
 })
 export class AppModule {}

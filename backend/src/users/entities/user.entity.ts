@@ -32,6 +32,10 @@ export class User {
   @Column({ name: 'phone_number', length: 30, nullable: true })
   phoneNumber?: string;
 
+  // Migration 006 : localisation (texte libre), renseignée à l'acceptation d'une invitation client.
+  @Column({ length: 255, nullable: true })
+  location?: string;
+
   @Column({ type: 'enum', enum: UserAuthority })
   authority: UserAuthority;
 
