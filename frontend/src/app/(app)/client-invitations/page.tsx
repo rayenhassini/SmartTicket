@@ -84,7 +84,7 @@ export default function ClientInvitationsPage() {
           message={
             created.mailMode === "smtp"
               ? `Invitation envoyée par email à ${created.email} (valable jusqu'au ${formatDate(created.expiresAt)}).`
-              : `Mode développement : aucun email envoyé. Transmettez ce lien à ${created.email} : ${created.devLink ?? ""}`
+              : `Mode développement (le serveur est en MAIL_MODE=log — vérifiez le journal de démarrage du backend) : aucun email envoyé. Transmettez ce lien à ${created.email} : ${created.devLink ?? ""}`
           }
         />
       )}

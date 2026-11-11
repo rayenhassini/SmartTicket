@@ -18,7 +18,8 @@
     "smoke:phase3": "node scripts/phase3-smoke.js",
     "smoke:tech": "node scripts/tech-space-smoke.js",
     "smoke:reset": "node scripts/password-reset-smoke.js",
-    "smoke:client": "node scripts/client-smoke.js"
+    "smoke:client": "node scripts/client-smoke.js",
+    "smoke:admin": "node scripts/admin-smoke.js"
   },
   "dependencies": {
     "@nestjs/common": "^9.4.3",

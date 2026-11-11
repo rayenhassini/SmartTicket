@@ -1,4 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { existsSync, readFileSync } from 'fs';
+import { resolve } from 'path';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import type { Transporter } from 'nodemailer';
@@ -28,6 +30,13 @@ export interface MailResult {
   mode: 'smtp' | 'log';
 }
 
+// Cause lisible d'un échec nodemailer (jamais d'identifiants : code + réponse du serveur SMTP).
+export function smtpReason(err: unknown): string {
+  const e = err as { code?: string; response?: string; message?: string };
+  const hint = e.code === 'EAUTH' ? ' (identifiants refusés : utilisez un mot de passe d\'application Gmail)' : '';
+  return `${e.code ? e.code + ' — ' : ''}${(e.response || e.message || 'erreur inconnue').toString().slice(0, 200)}${hint}`;
+}
+
 const escapeHtml = (v: string) =>
   v.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] as string);
 
@@ -38,11 +47,28 @@ const escapeHtml = (v: string) =>
 // (test/mail.spec.ts, scripts/fake-smtp.js). Le mode log n'est jamais accepté en production
 // (validation.schema.ts).
 @Injectable()
-export class MailService {
+export class MailService implements OnModuleInit {
   private readonly logger = new Logger('Mail');
   private transporter?: Transporter;
 
   constructor(private readonly config: ConfigService) {}
+
+  // Journal de démarrage : dit clairement quel mode est ACTIF et, s'il est « log » alors que le .env demande
+  // « smtp », pourquoi (variable d'environnement système qui écrase le .env, serveur non redémarré, etc.).
+  onModuleInit() {
+    if (this.mode === 'smtp') {
+      this.logger.log(`Mode email : SMTP actif (${this.config.get('mail.host')}:${this.config.get('mail.port')}, utilisateur ${this.config.get('mail.user')}).`);
+      return;
+    }
+    this.logger.warn('Mode email : LOG — aucun email ne sera envoyé (les liens d\'invitation sont renvoyés à l\'interface / écrits dans la console).');
+    for (const f of new Set([resolve('.env'), resolve(__dirname, '..', '..', '.env')])) {
+      if (!existsSync(f)) continue;
+      const fileMode = /^\s*MAIL_MODE\s*=\s*['"]?([^'"#\r\n]*)/m.exec(readFileSync(f, 'utf8'))?.[1]?.trim();
+      if (fileMode && fileMode.trim() !== 'log' && process.env.MAIL_MODE !== fileMode) {
+        this.logger.warn(`Le fichier ${f} demande MAIL_MODE=${fileMode}, mais la variable d'environnement système MAIL_MODE=${process.env.MAIL_MODE ?? '(absente)'} l'emporte (dotenv n'écrase jamais l'environnement). Supprimez-la (Windows : « set MAIL_MODE= » / variables d'environnement utilisateur) puis redémarrez.`);
+      }
+    }
+  }
 
   get mode(): 'smtp' | 'log' {
     return this.config.get<'smtp' | 'log'>('mail.mode') === 'smtp' ? 'smtp' : 'log';

@@ -7,7 +7,7 @@ import { DataSource, EntityManager, LessThan, Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { UserAuthority } from '../common/enums/user-authority.enum';
 import { ClientRole } from '../common/enums/client-role.enum';
-import { MailService } from '../mail/mail.service';
+import { MailService, smtpReason } from '../mail/mail.service';
 import { InvitationStatus } from '../invitations/entities/user-invitation.entity';
 import { ClientInvitation } from './entities/client-invitation.entity';
 import { AcceptClientInvitationDto } from './dto/client-invitation.dto';
@@ -76,7 +76,7 @@ export class ClientInvitationsService {
     } catch (err) {
       await this.invitations.delete({ id: saved.id });
       this.logger.error(`Échec d'envoi de l'invitation client à ${email} : ${(err as Error).message}`);
-      throw new BadGatewayException(withCode(502, 'Bad Gateway', 'MAIL_SEND_FAILED', "L'email d'invitation n'a pas pu être envoyé (vérifiez la configuration MAIL_* du serveur). Aucune invitation n'a été créée."));
+      throw new BadGatewayException(withCode(502, 'Bad Gateway', 'MAIL_SEND_FAILED', `L'email d'invitation n'a pas pu être envoyé (vérifiez la configuration MAIL_* du serveur). Cause : ${smtpReason(err)}. Aucune invitation n'a été créée.`));
     }
 
     return {

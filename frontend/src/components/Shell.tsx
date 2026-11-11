@@ -5,8 +5,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { homeFor } from "@/lib/home";
 import { useAuth } from "@/context/auth-context";
 
-// F1 : seul le module Tickets est actif. Les autres entrées sont visibles mais désactivées
-// (pages prévues en F2/F3). Pas de masquage par rôle en V1 : tout utilisateur authentifié voit tout.
+// Phase A : Sites, Contrats, Équipements et Logiciels sont actifs (PMO). Les autres entrées « bientôt »
+// restent visibles mais désactivées (Utilisateurs, Solutions, Types de support).
 const NAV: { label: string; href: string; enabled: boolean; roles?: string[] }[] = [
   { label: "Tickets", href: "/tickets", enabled: true, roles: ["pmo"] },
   // Espace technicien (Phase 3b) : tickets de son équipe et membres.
@@ -22,10 +22,10 @@ const NAV: { label: string; href: string; enabled: boolean; roles?: string[] }[]
   { label: "Invitations clients", href: "/client-invitations", enabled: true, roles: ["pmo"] },
   { label: "Utilisateurs", roles: ["pmo"], href: "/users", enabled: false },
   { label: "Solutions", roles: ["pmo"], href: "/solutions", enabled: false },
-  { label: "Contrats", roles: ["pmo"], href: "/contracts", enabled: false },
-  { label: "Équipements", roles: ["pmo"], href: "/equipment", enabled: false },
-  { label: "Logiciels", roles: ["pmo"], href: "/equipment-softs", enabled: false },
-  { label: "Sites", roles: ["pmo"], href: "/sites", enabled: false },
+  { label: "Contrats", roles: ["pmo"], href: "/contracts", enabled: true },
+  { label: "Équipements", roles: ["pmo"], href: "/equipment", enabled: true },
+  { label: "Logiciels", roles: ["pmo"], href: "/equipment-softs", enabled: true },
+  { label: "Sites", roles: ["pmo"], href: "/sites", enabled: true },
   { label: "Types de support", roles: ["pmo"], href: "/type-supports", enabled: false },
 ];
 

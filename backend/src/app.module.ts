@@ -1,4 +1,7 @@
 import { Module } from '@nestjs/common';
+import { resolve } from 'path';
+import { APP_FILTER } from '@nestjs/core';
+import { DbConflictFilter } from './common/filters/db-conflict.filter';
 import { ConfigModule } from '@nestjs/config';
 import configuration from './config/configuration';
 import { validationSchema } from './config/validation.schema';
@@ -23,6 +26,8 @@ import { ClientTicketsModule } from './client-tickets/client-tickets.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      // `.env` du dossier courant, puis celui de backend/ (même si le serveur est lancé depuis un autre dossier).
+      envFilePath: ['.env', resolve(__dirname, '..', '.env')],
       load: [configuration],
       validationSchema,
     }),
@@ -43,5 +48,6 @@ import { ClientTicketsModule } from './client-tickets/client-tickets.module';
     ClientInvitationsModule,
     ClientTicketsModule,
   ],
+  providers: [{ provide: APP_FILTER, useClass: DbConflictFilter }],
 })
 export class AppModule {}
