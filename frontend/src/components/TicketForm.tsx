@@ -145,10 +145,10 @@ export default function TicketForm({ mode, initial, submitLabel, onSubmit, onCan
           <>
             <div className="grid gap-4 sm:grid-cols-2">
               <Select id="client" label="Client" required={!internalTask} value={clientId} onChange={setClientId} options={clients.map((u) => ({ value: String(u.id), label: userLabel(u) }))} />
-              <Select id="contract" label="Contrat" value={contractId} onChange={setContractId} options={(lookups?.contracts ?? []).map((c) => ({ value: String(c.id), label: contractLabel(c) }))} />
+              <Select id="contract" label="Contrat" value={contractId} onChange={setContractId} options={(lookups?.contracts ?? []).filter((c) => c.valid !== false || String(c.id) === contractId).map((c) => ({ value: String(c.id), label: contractLabel(c) }))} />
               <Select id="site" label="Site" value={siteId} onChange={setSiteId} options={(lookups?.sites ?? []).map((s) => ({ value: String(s.id), label: siteLabel(s) }))} />
-              <Select id="equipment" label="Équipement (matériel)" value={equipmentId} onChange={setEquipmentId} options={(lookups?.equipment ?? []).map((x) => ({ value: String(x.id), label: equipmentLabel(x) }))} />
-              <Select id="equipmentSoft" label="Équipement (logiciel)" value={equipmentSoftId} onChange={setEquipmentSoftId} options={(lookups?.equipmentSofts ?? []).map((x) => ({ value: String(x.id), label: equipmentSoftLabel(x) }))} />
+              <Select id="equipment" label="Équipement (matériel)" value={equipmentId} onChange={setEquipmentId} options={(lookups?.equipment ?? []).filter((x) => x.valid !== false || String(x.id) === equipmentId).map((x) => ({ value: String(x.id), label: equipmentLabel(x) }))} />
+              <Select id="equipmentSoft" label="Équipement (logiciel)" value={equipmentSoftId} onChange={setEquipmentSoftId} options={(lookups?.equipmentSofts ?? []).filter((x) => x.valid !== false || String(x.id) === equipmentSoftId).map((x) => ({ value: String(x.id), label: equipmentSoftLabel(x) }))} />
             </div>
 
             {mode === "create" ? (
@@ -166,8 +166,8 @@ export default function TicketForm({ mode, initial, submitLabel, onSubmit, onCan
       </section>
 
       <div className="flex justify-end gap-3">
-        <button type="button" onClick={onCancel} className="btn-secondary" disabled={saving}>Annuler</button>
-        <button type="submit" className="btn-primary" disabled={saving}>{saving ? "Enregistrement…" : submitLabel}</button>
+        <button type="button" onClick={onCancel} className="btn btn-outline-secondary" disabled={saving}>Annuler</button>
+        <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? "Enregistrement…" : submitLabel}</button>
       </div>
     </form>
   );

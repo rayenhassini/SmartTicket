@@ -12,7 +12,7 @@ export function Spinner({ label }: { label?: string }) {
 
 export function ErrorBanner({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
-    <div className="flex items-start justify-between gap-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" role="alert">
+    <div className="flex items-start justify-between gap-4 rounded-lg border border-red-200 border-l-4 border-l-red-500 bg-red-50 px-4 py-3 text-sm text-red-800" role="alert">
       <span>{message}</span>
       {onRetry && (
         <button onClick={onRetry} className="shrink-0 font-medium underline">
@@ -25,7 +25,7 @@ export function ErrorBanner({ message, onRetry }: { message: string; onRetry?: (
 
 export function SuccessBanner({ message }: { message: string }) {
   return (
-    <div className="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800" role="status">
+    <div className="rounded-lg border border-green-200 border-l-4 border-l-green-500 bg-green-50 px-4 py-3 text-sm text-green-800" role="status">
       {message}
     </div>
   );
@@ -41,8 +41,11 @@ export function StatusBadge({ status }: { status: TicketStatus }) {
 
 export function EmptyState({ title, children }: { title: string; children?: React.ReactNode }) {
   return (
-    <div className="rounded-lg border border-dashed border-slate-300 bg-white px-6 py-12 text-center">
-      <p className="font-medium text-slate-700">{title}</p>
+    <div className="rounded-xl border border-dashed border-slate-300 bg-white px-6 py-14 text-center">
+      <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 text-brand-600" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5zM3 8l9 5 9-5M12 13v8" /></svg>
+      </span>
+      <p className="font-semibold text-slate-800">{title}</p>
       {children && <div className="mt-3 text-sm text-slate-500">{children}</div>}
     </div>
   );
@@ -51,7 +54,7 @@ export function EmptyState({ title, children }: { title: string; children?: Reac
 export function PageHeader({ title, actions }: { title: string; actions?: React.ReactNode }) {
   return (
     <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-      <h1 className="text-2xl font-semibold text-slate-900">{title}</h1>
+      <h1 className="text-2xl font-semibold tracking-tight text-slate-900">{title}</h1>
       {actions && <div className="flex items-center gap-2">{actions}</div>}
     </div>
   );

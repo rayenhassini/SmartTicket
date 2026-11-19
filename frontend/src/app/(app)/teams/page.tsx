@@ -6,9 +6,10 @@ import { createTeam, listTeams } from "@/lib/api/teams";
 import { errorMessage, formatDate } from "@/lib/format";
 import type { TeamSummary } from "@/lib/types";
 import { EmptyState, ErrorBanner, LeaderMark, PageHeader, Spinner, StaffingBadge, SuccessBanner } from "@/components/ui";
+import { peek, track } from "@/lib/swr";
 
 export default function TeamsPage() {
-  const [teams, setTeams] = useState<TeamSummary[] | null>(null);
+  const [teams, setTeams] = useState<TeamSummary[] | null>(() => peek(listTeams));
   const [error, setError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -17,7 +18,7 @@ export default function TeamsPage() {
 
   const load = useCallback(() => {
     setError(null);
-    listTeams().then(setTeams).catch((e) => setError(errorMessage(e)));
+    track(listTeams).then(setTeams).catch((e) => setError(errorMessage(e)));
   }, []);
   useEffect(load, [load]);
 
@@ -51,7 +52,7 @@ export default function TeamsPage() {
           <label htmlFor="team-name" className="label">Nouvelle équipe</label>
           <input id="team-name" className="input" placeholder="Nom de l'équipe (ex. Réseau)" value={name} onChange={(e) => setName(e.target.value)} maxLength={100} />
         </div>
-        <button type="submit" className="btn-primary" disabled={saving}>{saving ? "Création…" : "Créer l'équipe"}</button>
+        <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? "Création…" : "Créer l'équipe"}</button>
       </form>
       {formError && <ErrorBanner message={formError} />}
       {notice && <SuccessBanner message={notice} />}

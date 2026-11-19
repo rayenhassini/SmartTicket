@@ -1,4 +1,5 @@
 import type { SessionUser } from "./types";
+import { clearApiCache } from "./api-cache";
 
 const TOKEN_KEY = "smartticket.access_token";
 const USER_KEY = "smartticket.user";
@@ -26,6 +27,7 @@ export function getStoredUser(): SessionUser | null {
 }
 
 export function saveSession(token: string, user: SessionUser): void {
+  clearApiCache();
   try {
     window.localStorage.setItem(TOKEN_KEY, token);
     window.localStorage.setItem(USER_KEY, JSON.stringify(user));
@@ -35,6 +37,7 @@ export function saveSession(token: string, user: SessionUser): void {
 }
 
 export function clearSession(): void {
+  clearApiCache();
   if (typeof window === "undefined") return;
   try {
     window.localStorage.removeItem(TOKEN_KEY);

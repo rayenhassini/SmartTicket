@@ -30,6 +30,18 @@ export default () => ({
   invitation: {
     ttlHours: parseInt(process.env.INVITATION_TTL_HOURS ?? '72', 10),
   },
+  // Succession PMO : validité du lien envoyé au futur PMO (heures).
+  pmoSuccession: {
+    ttlHours: parseInt(process.env.PMO_SUCCESSION_TTL_HOURS ?? '72', 10),
+  },
+  // Création directe d'utilisateurs via POST /users : réservée aux jeux de données de test (jamais en production).
+  users: {
+    allowDirectCreation: process.env.ALLOW_DIRECT_USER_CREATION === 'true',
+  },
+  // Clé de chiffrement des secrets stockés en base (mot de passe d'application Gmail). Défaut : dérivée de JWT_SECRET.
+  secrets: {
+    encryptionKey: (process.env.SETTINGS_ENCRYPTION_KEY || process.env.JWT_SECRET) as string,
+  },
   // Durée de validité du lien « mot de passe oublié » (minutes).
   passwordReset: {
     ttlMinutes: parseInt(process.env.PASSWORD_RESET_TTL_MINUTES ?? '60', 10),

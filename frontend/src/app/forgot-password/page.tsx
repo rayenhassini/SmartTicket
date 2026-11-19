@@ -48,7 +48,7 @@ export default function ForgotPasswordPage() {
                 <label htmlFor="email" className="label">Email</label>
                 <input id="email" type="email" autoComplete="username" className="input" value={email} onChange={(e) => setEmail(e.target.value)} />
               </div>
-              <button type="submit" className="btn-primary w-full" disabled={loading}>{loading ? "Envoi…" : "Envoyer"}</button>
+              <button type="submit" className="btn btn-primary w-full" disabled={loading}>{loading ? "Envoi…" : "Envoyer"}</button>
             </form>
           )}
           <Link href="/login" className="block text-center text-sm font-medium text-brand-600 underline">Retour à la connexion</Link>

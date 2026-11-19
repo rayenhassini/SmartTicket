@@ -94,7 +94,7 @@ export default function TeamDetailPage() {
     return (
       <div className="space-y-4">
         <ErrorBanner message={loadError} onRetry={load} />
-        <Link href="/teams" className="btn-secondary">Retour aux équipes</Link>
+        <Link href="/teams" className="btn btn-outline-secondary">Retour aux équipes</Link>
       </div>
     );
   }
@@ -110,10 +110,10 @@ export default function TeamDetailPage() {
         title={team.name}
         actions={
           <>
-            <Link href="/teams" className="btn-secondary">Retour</Link>
+            <Link href="/teams" className="btn btn-outline-secondary">Retour</Link>
             <button
               onClick={handleDelete}
-              className="btn-danger"
+              className="btn btn-danger"
               disabled={busy || team.memberCount > 0}
               title={team.memberCount > 0 ? "Une équipe ne peut être supprimée que lorsqu'elle est vide." : "Supprimer l'équipe"}
             >
@@ -143,7 +143,7 @@ export default function TeamDetailPage() {
             <label htmlFor="rename" className="label">Nom de l'équipe</label>
             <input id="rename" className="input" value={renameDraft} onChange={(e) => setRenameDraft(e.target.value)} maxLength={100} />
           </div>
-          <button type="submit" className="btn-secondary" disabled={busy || !renameDraft.trim() || renameDraft.trim() === team.name}>Renommer</button>
+          <button type="submit" className="btn btn-outline-secondary" disabled={busy || !renameDraft.trim() || renameDraft.trim() === team.name}>Renommer</button>
         </form>
       </section>
 
@@ -174,7 +174,7 @@ export default function TeamDetailPage() {
                     <td className="py-2">
                       <div className="flex flex-wrap items-center gap-2">
                         {!m.isLeader && (
-                          <button className="btn-secondary !px-2 !py-1 text-xs" disabled={busy} onClick={() => run(() => setTeamLeader(id, m.userId), `${m.firstName} ${m.lastName} est maintenant responsable.`)}>
+                          <button className="btn btn-outline-secondary !px-2 !py-1 text-xs" disabled={busy} onClick={() => run(() => setTeamLeader(id, m.userId), `${m.firstName} ${m.lastName} est maintenant responsable.`)}>
                             Nommer responsable
                           </button>
                         )}
@@ -200,7 +200,7 @@ export default function TeamDetailPage() {
                           ))}
                         </select>
                         <button
-                          className="btn-secondary !px-2 !py-1 text-xs"
+                          className="btn btn-outline-secondary !px-2 !py-1 text-xs"
                           disabled={busy || !canShrink || !transferDraft[m.userId]}
                           onClick={() =>
                             run(async () => {
@@ -234,7 +234,7 @@ export default function TeamDetailPage() {
             ))}
           </select>
           <button
-            className="btn-primary"
+            className="btn btn-primary"
             disabled={busy || !addDraft}
             onClick={() => run(async () => { await addTeamMember(id, addDraft); setAddDraft(""); }, team.memberCount === 0 ? "Premier membre ajouté : il est le responsable de l'équipe." : "Membre ajouté.")}
           >

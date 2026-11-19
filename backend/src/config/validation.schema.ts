@@ -44,6 +44,11 @@ export const validationSchema = Joi.object({
     .uri({ scheme: ['http', 'https'] })
     .when('NODE_ENV', { is: 'production', then: Joi.required(), otherwise: Joi.string().default('http://localhost:3000') }),
   INVITATION_TTL_HOURS: Joi.number().integer().min(1).max(720).default(72),
+  PMO_SUCCESSION_TTL_HOURS: Joi.number().integer().min(1).max(720).default(72),
+  ALLOW_DIRECT_USER_CREATION: Joi.boolean()
+    .default(false)
+    .when('NODE_ENV', { is: 'production', then: Joi.boolean().valid(false) }),
+  SETTINGS_ENCRYPTION_KEY: Joi.string().min(16).allow(''),
   PASSWORD_RESET_TTL_MINUTES: Joi.number().integer().min(5).max(1440).default(60),
   // Production : envoi réel obligatoire (jamais de lien en console, jamais de devLink dans l'API).
   MAIL_MODE: Joi.string()

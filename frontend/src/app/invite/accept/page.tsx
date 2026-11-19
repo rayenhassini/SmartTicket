@@ -56,7 +56,7 @@ function AcceptForm() {
       <div className="card space-y-4">
         <ErrorBanner message={loadError} />
         <p className="text-sm text-slate-600">Demandez une nouvelle invitation à votre responsable PMO.</p>
-        <Link href="/login" className="btn-primary inline-block text-center">Aller à la connexion</Link>
+        <Link href="/login" className="btn btn-primary inline-block text-center">Aller à la connexion</Link>
       </div>
     );
   }
@@ -94,7 +94,7 @@ function AcceptForm() {
         <label htmlFor="confirm" className="label">Confirmer le mot de passe</label>
         <input id="confirm" type="password" className="input" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
       </div>
-      <button type="submit" className="btn-primary w-full" disabled={saving}>{saving ? "Création…" : "Créer mon compte"}</button>
+      <button type="submit" className="btn btn-primary w-full" disabled={saving}>{saving ? "Création…" : "Créer mon compte"}</button>
     </form>
   );
 }

@@ -12,7 +12,7 @@ export default function NoAccessPage() {
       <div className="card w-full max-w-md space-y-4 text-center">
         <h1 className="text-2xl font-bold text-brand-700">SmartTicket</h1>
         <p className="text-sm text-slate-600">Aucun espace n&apos;est disponible pour votre rôle pour le moment.</p>
-        <button className="btn-secondary" onClick={() => { logout(); router.replace("/login"); }}>Déconnexion</button>
+        <button className="btn btn-outline-secondary" onClick={() => { logout(); router.replace("/login"); }}>Déconnexion</button>
       </div>
     </div>
   );

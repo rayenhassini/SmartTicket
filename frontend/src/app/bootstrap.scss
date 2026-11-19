@@ -1,0 +1,13 @@
+// Bootstrap 5.3 MODULAIRE : uniquement les composants structurels utilisés.
+// Les classes utilitaires de Bootstrap (p-4, mb-3, gap-3, d-flex…) sont volontairement EXCLUSES :
+// elles portent !important et écraseraient les utilitaires Tailwind de mêmes noms (p-4, mb-4, gap-3…).
+@import "bootstrap/scss/functions";
+@import "bootstrap/scss/variables";
+@import "bootstrap/scss/variables-dark";
+@import "bootstrap/scss/maps";
+@import "bootstrap/scss/mixins";
+@import "bootstrap/scss/root";
+@import "bootstrap/scss/buttons";
+@import "bootstrap/scss/badge";
+@import "bootstrap/scss/alert";
+@import "bootstrap/scss/close";

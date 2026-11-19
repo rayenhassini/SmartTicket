@@ -39,7 +39,7 @@ function ResetForm() {
     return (
       <div className="card space-y-4">
         <ErrorBanner message="Lien incomplet : aucun jeton." />
-        <Link href="/forgot-password" className="btn-primary inline-block text-center">Refaire une demande</Link>
+        <Link href="/forgot-password" className="btn btn-primary inline-block text-center">Refaire une demande</Link>
       </div>
     );
   }
@@ -59,7 +59,7 @@ function ResetForm() {
         <label htmlFor="confirm" className="label">Confirmer le mot de passe</label>
         <input id="confirm" type="password" autoComplete="new-password" className="input" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
       </div>
-      <button type="submit" className="btn-primary w-full" disabled={saving}>{saving ? "Enregistrement…" : "Mettre à jour le mot de passe"}</button>
+      <button type="submit" className="btn btn-primary w-full" disabled={saving}>{saving ? "Enregistrement…" : "Mettre à jour le mot de passe"}</button>
     </form>
   );
 }

@@ -1,4 +1,5 @@
 import { clearSession, getToken } from "./session";
+import { cachedGet, clearApiCache } from "./api-cache";
 
 export const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001").replace(/\/$/, "");
 
@@ -29,7 +30,18 @@ function extractMessage(data: unknown, fallback: string): string {
   return fallback;
 }
 
-export async function apiFetch<T = unknown>(path: string, options: ApiOptions = {}): Promise<T> {
+export function apiFetch<T = unknown>(path: string, options: ApiOptions = {}): Promise<T> {
+  const { method = "GET" } = options;
+  if (method === "GET") {
+    // Clé liée au jeton : jamais de données partagées entre deux sessions.
+    return cachedGet<T>(`${getToken() ?? ""}|${path}`, () => request<T>(path, options));
+  }
+  // Toute écriture invalide le cache (avant et après, pour couvrir les lectures en vol).
+  clearApiCache();
+  return request<T>(path, options).finally(clearApiCache);
+}
+
+async function request<T>(path: string, options: ApiOptions): Promise<T> {
   const { method = "GET", body, skipAuthRedirect = false } = options;
 
   const headers: Record<string, string> = {};

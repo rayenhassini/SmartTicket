@@ -1,7 +1,31 @@
+# Dépendances et builds
 node_modules/
 .next/
 dist/
+build/
+out/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+# SECRETS : ne jamais versionner
 .env
-backend/.env
-frontend/.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+*.pem
+*.key
+
+# Logs, sauvegardes, dumps locaux, OS / éditeur
 *.log
+npm-debug.log*
+*.bak
+*.dump
+backups/
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/

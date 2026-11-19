@@ -5,6 +5,7 @@ import { cancelClientInvitation, createClientInvitation, listClientInvitations }
 import { errorMessage, formatDate } from "@/lib/format";
 import type { ClientInvitationView, CreatedClientInvitation, InvitationStatus } from "@/lib/types";
 import { EmptyState, ErrorBanner, PageHeader, Spinner, SuccessBanner } from "@/components/ui";
+import { peek, track } from "@/lib/swr";
 
 const STATUS_LABEL: Record<InvitationStatus, string> = {
   pending: "En attente",
@@ -21,7 +22,7 @@ const STATUS_STYLE: Record<InvitationStatus, string> = {
 
 // Invitations CLIENT (PMO) : page séparée de celle des techniciens, sans choix d'équipe.
 export default function ClientInvitationsPage() {
-  const [items, setItems] = useState<ClientInvitationView[] | null>(null);
+  const [items, setItems] = useState<ClientInvitationView[] | null>(() => peek(listClientInvitations));
   const [error, setError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [created, setCreated] = useState<CreatedClientInvitation | null>(null);
@@ -31,7 +32,7 @@ export default function ClientInvitationsPage() {
 
   const load = useCallback(() => {
     setError(null);
-    listClientInvitations().then(setItems).catch((e) => setError(errorMessage(e)));
+    track(listClientInvitations).then(setItems).catch((e) => setError(errorMessage(e)));
   }, []);
   useEffect(load, [load]);
 
@@ -75,7 +76,7 @@ export default function ClientInvitationsPage() {
           <label htmlFor="cinv-email" className="label">Email du client</label>
           <input id="cinv-email" type="email" className="input" placeholder="client@exemple.com" value={email} onChange={(e) => setEmail(e.target.value)} maxLength={190} />
         </div>
-        <button type="submit" className="btn-primary" disabled={saving}>{saving ? "Envoi…" : "Inviter"}</button>
+        <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? "Envoi…" : "Inviter"}</button>
       </form>
       <p className="text-sm text-slate-500">Le client reçoit un lien pour créer son compte (nom, mot de passe, téléphone, localisation ; société facultative). Il aura accès à ses tickets en lecture seule.</p>
       {formError && <ErrorBanner message={formError} />}
@@ -84,7 +85,7 @@ export default function ClientInvitationsPage() {
           message={
             created.mailMode === "smtp"
               ? `Invitation envoyée par email à ${created.email} (valable jusqu'au ${formatDate(created.expiresAt)}).`
-              : `Mode développement : aucun email envoyé. Transmettez ce lien à ${created.email} : ${created.devLink ?? ""}`
+              : `Mode développement (le serveur est en MAIL_MODE=log — vérifiez le journal de démarrage du backend) : aucun email envoyé. Transmettez ce lien à ${created.email} : ${created.devLink ?? ""}`
           }
         />
       )}

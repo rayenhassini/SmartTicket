@@ -65,7 +65,7 @@ export class SitesService {
 
   async unlinkEquipment(siteId: number, equipmentId: number): Promise<Site> {
     const site = await this.findOne(siteId);
-    site.equipment = (site.equipment ?? []).filter((e) => e.id !== equipmentId);
+    site.equipment = (site.equipment ?? []).filter((e) => String(e.id) !== String(equipmentId));
     return this.sitesRepository.save(site);
   }
 
@@ -84,7 +84,7 @@ export class SitesService {
   async unlinkEquipmentSoft(siteId: number, equipmentSoftId: number): Promise<Site> {
     const site = await this.findOne(siteId);
     site.equipmentSofts = (site.equipmentSofts ?? []).filter(
-      (e) => e.id !== equipmentSoftId,
+      (e) => String(e.id) !== String(equipmentSoftId),
     );
     return this.sitesRepository.save(site);
   }

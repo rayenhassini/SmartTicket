@@ -21,7 +21,7 @@ const server = new SMTPServer({
     stream.on('end', () => {
       const raw = Buffer.concat(chunks).toString('utf8');
       const decoded = Buffer.from(raw.replace(/=\r?\n/g, '').replace(/=([0-9A-F]{2})/g, (_, h) => String.fromCharCode(parseInt(h, 16))), 'latin1').toString('utf8');
-      const link = (decoded.match(/https?:\/\/[^\s"<]+\/invite\/accept\?token=[A-Za-z0-9_-]+/) || [])[0] || null;
+      const link = (decoded.match(/https?:\/\/[^\s"<]+\/[a-z\/]+\?token=[A-Za-z0-9_-]+/) || [])[0] || null;
       const rec = { at: new Date().toISOString(), from: session.envelope.mailFrom.address, to: session.envelope.rcptTo.map((r) => r.address), link };
       console.log(`[fake-smtp] mail de ${rec.from} à ${rec.to.join(',')} — lien : ${link}`);
       if (out) fs.appendFileSync(out, JSON.stringify(rec) + '\n');

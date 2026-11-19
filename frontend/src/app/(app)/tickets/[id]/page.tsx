@@ -86,7 +86,7 @@ export default function TicketDetailPage() {
     return (
       <div className="space-y-4">
         <ErrorBanner message={loadError} onRetry={load} />
-        <Link href="/tickets" className="btn-secondary">Retour à la liste</Link>
+        <Link href="/tickets" className="btn btn-outline-secondary">Retour à la liste</Link>
       </div>
     );
   }
@@ -99,9 +99,9 @@ export default function TicketDetailPage() {
         title={`${ticket.number} — ${ticket.title}`}
         actions={
           <>
-            <Link href="/tickets" className="btn-secondary">Retour</Link>
-            <Link href={`/tickets/${ticket.id}/edit`} className="btn-secondary">Modifier</Link>
-            <button onClick={handleDelete} className="btn-danger" disabled={busy}>Supprimer</button>
+            <Link href="/tickets" className="btn btn-outline-secondary">Retour</Link>
+            <Link href={`/tickets/${ticket.id}/edit`} className="btn btn-outline-secondary">Modifier</Link>
+            <button onClick={handleDelete} className="btn btn-danger" disabled={busy}>Supprimer</button>
           </>
         }
       />
@@ -137,7 +137,7 @@ export default function TicketDetailPage() {
             ))}
           </select>
           <button
-            className="btn-primary"
+            className="btn btn-primary"
             disabled={busy || statusDraft === ticket.status}
             onClick={() => run(() => updateTicketStatus(id, statusDraft), "Statut mis à jour.")}
           >
@@ -159,7 +159,7 @@ export default function TicketDetailPage() {
             ))}
           </select>
           <button
-            className="btn-secondary"
+            className="btn btn-outline-secondary"
             disabled={busy || !teamDraft}
             onClick={() => run(async () => { await assignTeam(id, teamDraft); setTeamDraft(""); }, "Équipe assignée (statut « Assigné » si le ticket n'était pas assigné).")}
           >
@@ -180,7 +180,7 @@ export default function TicketDetailPage() {
             ))}
           </select>
           <button
-            className="btn-secondary"
+            className="btn btn-outline-secondary"
             disabled={busy || !supervisorDraft}
             onClick={() => run(async () => { await setSupervisor(id, Number(supervisorDraft)); setSupervisorDraft(""); }, "Superviseur mis à jour.")}
           >
@@ -209,7 +209,7 @@ export default function TicketDetailPage() {
             ))}
           </select>
           <button
-            className="btn-secondary"
+            className="btn btn-outline-secondary"
             disabled={busy || !solutionDraft}
             onClick={() => run(async () => { await linkSolution(id, Number(solutionDraft)); setSolutionDraft(""); }, "Solution liée au ticket.")}
           >

@@ -3,9 +3,12 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { cancelInvitation, createInvitation, listInvitations } from "@/lib/api/invitations";
 import { listTeams } from "@/lib/api/teams";
+import { peek, track } from "@/lib/swr";
 import { errorMessage, formatDate } from "@/lib/format";
 import type { CreatedInvitation, InvitationStatus, InvitationView, TeamSummary } from "@/lib/types";
 import { EmptyState, ErrorBanner, PageHeader, Spinner, SuccessBanner } from "@/components/ui";
+
+const loadAll = () => Promise.all([listTeams(), listInvitations()]);
 
 const STATUS_LABEL: Record<InvitationStatus, string> = {
   pending: "En attente",
@@ -21,8 +24,8 @@ const STATUS_STYLE: Record<InvitationStatus, string> = {
 };
 
 export default function InvitationsPage() {
-  const [teams, setTeams] = useState<TeamSummary[] | null>(null);
-  const [items, setItems] = useState<InvitationView[] | null>(null);
+  const [teams, setTeams] = useState<TeamSummary[] | null>(() => peek(loadAll)?.[0] ?? null);
+  const [items, setItems] = useState<InvitationView[] | null>(() => peek(loadAll)?.[1] ?? null);
   const [error, setError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [created, setCreated] = useState<CreatedInvitation | null>(null);
@@ -33,7 +36,7 @@ export default function InvitationsPage() {
 
   const load = useCallback(() => {
     setError(null);
-    Promise.all([listTeams(), listInvitations()])
+    track(loadAll)
       .then(([t, i]) => {
         setTeams(t);
         setItems(i);
@@ -92,7 +95,7 @@ export default function InvitationsPage() {
             ))}
           </select>
         </div>
-        <button type="submit" className="btn-primary" disabled={saving}>{saving ? "Envoi…" : "Inviter"}</button>
+        <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? "Envoi…" : "Inviter"}</button>
       </form>
       {teams && teams.length === 0 && (
         <p className="text-sm text-slate-600">Aucune équipe : créez d'abord une équipe dans « Équipes » (une invitation est toujours rattachée à une équipe).</p>
@@ -103,7 +106,7 @@ export default function InvitationsPage() {
           message={
             created.mailMode === "smtp"
               ? `Invitation envoyée par email à ${created.email} (valable jusqu'au ${formatDate(created.expiresAt)}).`
-              : `Mode développement : aucun email envoyé. Transmettez ce lien à ${created.email} : ${created.devLink ?? ""}`
+              : `Mode développement (le serveur est en MAIL_MODE=log — vérifiez le journal de démarrage du backend) : aucun email envoyé. Transmettez ce lien à ${created.email} : ${created.devLink ?? ""}`
           }
         />
       )}

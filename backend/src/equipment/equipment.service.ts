@@ -6,6 +6,7 @@ import { EquipmentTypeSupport } from './entities/equipment-type-support.entity';
 import { CreateEquipmentDto } from './dto/create-equipment.dto';
 import { UpdateEquipmentDto } from './dto/update-equipment.dto';
 import { LinkTypeSupportDto } from './dto/link-type-support.dto';
+import { assertDateRange } from '../common/validators/date-range';
 
 @Injectable()
 export class EquipmentService {
@@ -16,7 +17,8 @@ export class EquipmentService {
     private readonly linkRepository: Repository<EquipmentTypeSupport>,
   ) {}
 
-  create(dto: CreateEquipmentDto): Promise<Equipment> {
+  async create(dto: CreateEquipmentDto): Promise<Equipment> {
+    assertDateRange(dto.startDateContract, dto.endDateContract, "La période du contrat de l'équipement");
     const entity = this.equipmentRepository.create(dto);
     return this.equipmentRepository.save(entity);
   }
@@ -38,6 +40,7 @@ export class EquipmentService {
 
   async update(id: number, dto: UpdateEquipmentDto): Promise<Equipment> {
     const entity = await this.findOne(id);
+    assertDateRange(dto.startDateContract ?? entity.startDateContract, dto.endDateContract ?? entity.endDateContract, "La période du contrat de l'équipement");
     Object.assign(entity, dto);
     return this.equipmentRepository.save(entity);
   }

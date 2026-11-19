@@ -67,10 +67,10 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-indigo-950 via-indigo-800 to-indigo-500 px-4">
       <div className="w-full max-w-sm">
-        <h1 className="mb-1 text-center text-3xl font-bold text-brand-700">SmartTicket</h1>
-        <p className="mb-6 text-center text-sm text-slate-500">Connectez-vous pour accéder à vos tickets</p>
+        <h1 className="mb-1 text-center text-3xl font-bold text-white">SmartTicket</h1>
+        <p className="mb-6 text-center text-sm text-indigo-100">Connectez-vous pour accéder à vos tickets</p>
 
         <form onSubmit={onSubmit} className="card space-y-4" noValidate>
           {invited && !error && <SuccessBanner message="Compte créé : connectez-vous avec votre email et votre mot de passe." />}
@@ -84,14 +84,14 @@ export default function LoginPage() {
             <label htmlFor="password" className="label">Mot de passe</label>
             <input id="password" type="password" autoComplete="current-password" className="input" value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
-          <button type="submit" className="btn-primary w-full" disabled={loading}>
+          <button type="submit" className="btn btn-primary w-full" disabled={loading}>
             {loading ? "Connexion…" : "Se connecter"}
           </button>
           <p className="text-center text-sm"><Link href="/forgot-password" className="font-medium text-brand-600 underline">Mot de passe oublié ?</Link></p>
         </form>
 
-        <p className="mt-4 text-center text-xs text-slate-500">
-          Premier démarrage ? <Link href="/setup" className="font-medium text-brand-600 underline">Créer le premier compte</Link>
+        <p className="mt-4 text-center text-xs text-indigo-100">
+          Premier démarrage ? <Link href="/setup" className="font-medium text-white underline">Créer le premier compte</Link>
         </p>
       </div>
     </div>

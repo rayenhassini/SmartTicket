@@ -7,18 +7,18 @@ import { listMyTickets } from "@/lib/api/my";
 import { errorMessage, formatDate, fullName, STATUS_LABELS } from "@/lib/format";
 import { TICKET_STATUSES, type MyTicketsResponse } from "@/lib/types";
 import { EmptyState, ErrorBanner, LeaderMark, PageHeader, Spinner, StatusBadge } from "@/components/ui";
+import { peek, track } from "@/lib/swr";
 
 // Espace technicien : tickets assignés à MON équipe (filtrés par l'API).
 export default function MyTicketsPage() {
   const router = useRouter();
-  const [data, setData] = useState<MyTicketsResponse | null>(null);
+  const [data, setData] = useState<MyTicketsResponse | null>(() => peek(listMyTickets));
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState("");
 
   const load = useCallback(() => {
     setError(null);
-    setData(null);
-    listMyTickets().then(setData).catch((e) => setError(errorMessage(e)));
+    track(listMyTickets).then(setData).catch((e) => setError(errorMessage(e)));
   }, []);
   useEffect(load, [load]);
 

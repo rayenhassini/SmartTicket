@@ -1,5 +1,13 @@
 # SmartTicket
 
+## Récupérer la version « phase-prete » (binômes)
+```bash
+git clone https://github.com/rayenhassini/SmartTicket.git
+cd SmartTicket
+git checkout phase-prete
+```
+Prérequis : Node.js 18+ (ou 20), npm, MySQL 8 / MariaDB 10.6+ (XAMPP convient). Aucun secret n'est dans le dépôt : créez vos fichiers `.env` à partir des `.env.example` (voir ci-dessous). Détail complet : `GITHUB_PUBLISH.md`.
+
 Support IT / ticketing : backend NestJS + MySQL 8, frontend Next.js.
 
 ```
@@ -18,6 +26,8 @@ SmartTicket/
    `mysql -u root -p smartticket_v1 < database/migrations/005_client_invitations.sql`
    `mysql -u root -p smartticket_v1 < database/migrations/006_user_location.sql`
    `mysql -u root -p smartticket_v1 < database/migrations/007_client_invitations_pending_unique.sql`  (facultative)
+   `mysql -u root -p smartticket_v1 < database/migrations/008_pmo_succession_mail_settings.sql`  (Phase B+ : succession PMO + config mail)
+   (ne pas exécuter `001_phase2_teams_smoketest.sql` : réservé aux tests)
 2. **Backend** : `cd backend && cp .env.example .env` (renseigner DB + JWT), `npm install`, `npm run start:dev` → http://localhost:3001
 3. **Frontend** : `cd frontend && cp .env.example .env.local`, `npm install`, `npm run dev` → http://localhost:3000
 4. Ouvrir http://localhost:3000/setup pour créer le premier utilisateur, puis se connecter.

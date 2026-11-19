@@ -10,6 +10,7 @@ import { UpdateContractDto } from './dto/update-contract.dto';
 import { LinkClientDto } from './dto/link-client.dto';
 import { LinkTechnicianDto } from './dto/link-technician.dto';
 import { LinkTypeSupportDto } from './dto/link-type-support.dto';
+import { assertDateRange, assertNonNegativeAmount } from '../common/validators/date-range';
 
 @Injectable()
 export class ContractsService {
@@ -24,7 +25,9 @@ export class ContractsService {
     private readonly usersRepository: Repository<User>,
   ) {}
 
-  create(dto: CreateContractDto): Promise<Contract> {
+  async create(dto: CreateContractDto): Promise<Contract> {
+    assertDateRange(dto.startDate, dto.endDate, 'La période du contrat');
+    assertNonNegativeAmount(dto.montant);
     const { commercialId, ...rest } = dto;
     const entity = this.contractsRepository.create({
       ...rest,
@@ -59,6 +62,8 @@ export class ContractsService {
 
   async update(id: number, dto: UpdateContractDto): Promise<Contract> {
     const entity = await this.findOne(id);
+    assertDateRange(dto.startDate ?? entity.startDate, dto.endDate ?? entity.endDate, 'La période du contrat');
+    assertNonNegativeAmount(dto.montant);
     const { commercialId, ...rest } = dto;
     Object.assign(entity, rest);
     if (commercialId !== undefined) {
@@ -84,7 +89,7 @@ export class ContractsService {
 
   async unlinkClient(contractId: number, clientId: number): Promise<Contract> {
     const contract = await this.findOne(contractId);
-    contract.clients = (contract.clients ?? []).filter((c) => c.id !== clientId);
+    contract.clients = (contract.clients ?? []).filter((c) => String(c.id) !== String(clientId));
     return this.contractsRepository.save(contract);
   }
 

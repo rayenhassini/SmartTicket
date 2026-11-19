@@ -22,7 +22,20 @@ export class UsersService {
     private readonly teamsService: TeamsService,
   ) {}
 
+  // Règle métier : un seul PMO actif dans toute l'application.
+  async assertSinglePmo(authority: string | undefined, valid: boolean | undefined, selfId?: number): Promise<void> {
+    if (authority !== UserAuthority.PMO || valid === false) return;
+    const other = await this.usersRepository.findOne({ where: { authority: UserAuthority.PMO, valid: true } });
+    if (other && (selfId === undefined || String(other.id) !== String(selfId))) {
+      throw new ConflictException({
+        statusCode: 409, error: 'Conflict', code: 'PMO_ALREADY_EXISTS',
+        message: 'Il ne peut y avoir qu\'un seul PMO actif. Pour passer la main, utilisez « Démissionner » (invitation d\'un successeur).',
+      });
+    }
+  }
+
   async create(dto: CreateUserDto): Promise<User> {
+    await this.assertSinglePmo(dto.authority, dto.valid ?? true);
     const existing = await this.usersRepository.findOne({
       where: { email: dto.email },
     });
@@ -37,7 +50,9 @@ export class UsersService {
       ...rest,
       passwordHash,
     });
-    return this.usersRepository.save(user);
+    // Relecture : l'entité sauvegardée contient encore passwordHash (select:false ne s'applique qu'aux lectures).
+    const saved = await this.usersRepository.save(user);
+    return this.findOne(saved.id);
   }
 
   findAll(): Promise<User[]> {
@@ -73,8 +88,21 @@ export class UsersService {
       .getOne();
   }
 
-  async update(id: number, dto: UpdateUserDto): Promise<User> {
+  async update(id: number, dto: UpdateUserDto, actorId?: number): Promise<User> {
     const user = await this.findOne(id);
+
+    // R7 : on ne peut pas se désactiver ni changer son propre rôle (risque de s'enfermer dehors).
+    if (actorId !== undefined && Number(actorId) === Number(user.id)) {
+      if (dto.valid === false || (dto.authority !== undefined && dto.authority !== user.authority)) {
+        throw new ConflictException({
+          statusCode: 409, error: 'Conflict', code: 'SELF_ACTION_FORBIDDEN',
+          message: 'Vous ne pouvez pas désactiver votre propre compte ni changer votre propre rôle.',
+        });
+      }
+    }
+
+    // Un seul PMO actif : ni promotion en PMO, ni réactivation d'un ancien PMO s'il y en a déjà un.
+    await this.assertSinglePmo(dto.authority ?? user.authority, dto.valid ?? user.valid, user.id);
 
     // Phase 2 : un membre d'équipe est forcément un technicien actif.
     if (dto.authority !== undefined && dto.authority !== UserAuthority.TECHNICIAN) {
@@ -94,8 +122,14 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: number, actorId?: number): Promise<void> {
     const user = await this.findOne(id);
+    if (actorId !== undefined && Number(actorId) === Number(user.id)) {
+      throw new ConflictException({
+        statusCode: 409, error: 'Conflict', code: 'SELF_ACTION_FORBIDDEN',
+        message: 'Vous ne pouvez pas supprimer votre propre compte.',
+      });
+    }
     // Phase 2 : supprimer un membre contournerait les règles d'effectif (FK RESTRICT en base).
     await this.teamsService.assertNotMember(user.id, 'supprimer ce compte');
     await this.usersRepository.remove(user);

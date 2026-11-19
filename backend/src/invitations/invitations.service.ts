@@ -15,7 +15,7 @@ import { User } from '../users/entities/user.entity';
 import { Team } from '../teams/entities/team.entity';
 import { UserAuthority } from '../common/enums/user-authority.enum';
 import { TeamsService } from '../teams/teams.service';
-import { MailService } from '../mail/mail.service';
+import { MailService, smtpReason } from '../mail/mail.service';
 import { InvitationStatus, UserInvitation } from './entities/user-invitation.entity';
 import { AcceptInvitationDto, CreateInvitationDto } from './dto/invitation.dto';
 
@@ -93,7 +93,7 @@ export class InvitationsService {
       // Échec d'envoi : on ne laisse pas une invitation « pending » dont personne n'a reçu le lien.
       await this.invitations.delete({ id: saved.id });
       this.logger.error(`Échec d'envoi de l'invitation à ${email} : ${(err as Error).message}`);
-      throw new BadGatewayException(withCode(502, 'Bad Gateway', 'MAIL_SEND_FAILED', "L'email d'invitation n'a pas pu être envoyé (vérifiez la configuration MAIL_* du serveur). Aucune invitation n'a été créée."));
+      throw new BadGatewayException(withCode(502, 'Bad Gateway', 'MAIL_SEND_FAILED', `L'email d'invitation n'a pas pu être envoyé (vérifiez la configuration MAIL_* du serveur). Cause : ${smtpReason(err)}. Aucune invitation n'a été créée.`));
     }
 
     return {

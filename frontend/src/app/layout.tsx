@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+// Bootstrap 5 modulaire (SCSS : variables, boutons, badges, alertes ; sans JS) AVANT globals.css : Tailwind gère layout/utilitaires.
+import "./bootstrap.scss";
 import "./globals.css";
 import { AuthProvider } from "@/context/auth-context";
 

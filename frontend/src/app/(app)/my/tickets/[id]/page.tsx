@@ -57,7 +57,7 @@ export default function MyTicketPage() {
     return (
       <div className="space-y-4">
         <ErrorBanner message={loadError} onRetry={load} />
-        <Link href="/my/tickets" className="btn-secondary">Retour à mes tickets</Link>
+        <Link href="/my/tickets" className="btn btn-outline-secondary">Retour à mes tickets</Link>
       </div>
     );
   }
@@ -65,7 +65,7 @@ export default function MyTicketPage() {
 
   return (
     <div className="max-w-4xl space-y-6">
-      <PageHeader title={`${ticket.number} — ${ticket.title}`} actions={<Link href="/my/tickets" className="btn-secondary">Retour</Link>} />
+      <PageHeader title={`${ticket.number} — ${ticket.title}`} actions={<Link href="/my/tickets" className="btn btn-outline-secondary">Retour</Link>} />
       {actionError && <ErrorBanner message={actionError} />}
       {notice && <SuccessBanner message={notice} />}
 
@@ -91,7 +91,7 @@ export default function MyTicketPage() {
           <>
             <textarea className="input min-h-[8rem]" value={solutionDraft} onChange={(e) => setSolutionDraft(e.target.value)} placeholder="Décrivez la solution apportée…" maxLength={10000} aria-label="Solution" />
             <button
-              className="btn-primary"
+              className="btn btn-primary"
               disabled={busy || !solutionDraft.trim() || solutionDraft.trim() === (ticket.solution?.solutionText ?? "")}
               onClick={() => run(() => saveMyTicketSolution(id, solutionDraft.trim()), "Solution enregistrée.")}
             >
@@ -115,7 +115,7 @@ export default function MyTicketPage() {
               ))}
             </select>
             <button
-              className="btn-primary"
+              className="btn btn-primary"
               disabled={busy || statusDraft === ticket.status}
               onClick={() => {
                 if (statusDraft === "Deleted" && !window.confirm("Supprimer ce ticket ? Il disparaîtra de la liste de l'équipe.")) return;

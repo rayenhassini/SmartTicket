@@ -34,7 +34,7 @@ export default function ClientTicketPage() {
     return (
       <div className="space-y-4">
         <ErrorBanner message={error} onRetry={load} />
-        <Link href="/client/tickets" className="btn-secondary">Retour à mes tickets</Link>
+        <Link href="/client/tickets" className="btn btn-outline-secondary">Retour à mes tickets</Link>
       </div>
     );
   }
@@ -42,7 +42,7 @@ export default function ClientTicketPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title={`${ticket.number} — ${ticket.title}`} actions={<Link href="/client/tickets" className="btn-secondary">Retour</Link>} />
+      <PageHeader title={`${ticket.number} — ${ticket.title}`} actions={<Link href="/client/tickets" className="btn btn-outline-secondary">Retour</Link>} />
 
       <section className="card space-y-4">
         <div className="flex flex-wrap items-center gap-2">

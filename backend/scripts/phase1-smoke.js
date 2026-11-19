@@ -35,8 +35,8 @@ async function login(email, password = PASSWORD) {
   const r = await call('POST', '/auth/login', { body: { email, password } });
   return r.status === 201 || r.status === 200 ? r.data.access_token : null;
 }
-async function createUser(pmo, authority) {
-  const email = `smoke-${authority}-${run}@example.com`;
+async function createUser(pmo, authority, tag = authority) {
+  const email = `smoke-${tag}-${run}@example.com`;
   const r = await call('POST', '/users', { token: pmo, body: { email, password: PASSWORD, firstName: 'Smoke', lastName: authority, authority, valid: true } });
   if (r.status !== 201) throw new Error(`création ${authority} impossible: ${r.status} ${JSON.stringify(r.data)}`);
   return { id: Number(r.data.id), email };
@@ -65,9 +65,12 @@ async function createUser(pmo, authority) {
   const tech = await createUser(pmoToken, 'technician');
   const client = await createUser(pmoToken, 'client');
   const assistant = await createUser(pmoToken, 'assistant');
-  const demo = await createUser(pmoToken, 'pmo');
+  // Règle « un seul PMO actif » : un second PMO ne peut pas être créé via /users.
+  const secondPmo = await call('POST', '/users', { token: pmoToken, body: { email: `smoke-pmo2-${run}@example.com`, password: PASSWORD, firstName: 'S', lastName: 'Pmo2', authority: 'pmo', valid: true } });
+  check('POST /users authority=pmo alors qu\'un PMO actif existe → 409 PMO_ALREADY_EXISTS', secondPmo.status === 409 && secondPmo.data && secondPmo.data.code === 'PMO_ALREADY_EXISTS', `reçu ${secondPmo.status}`);
+  const demo = await createUser(pmoToken, 'technician', 'demo'); // compte « à rôle changeant » (le rôle PMO n'existe qu'en un seul exemplaire)
   const techToken = await login(tech.email), clientToken = await login(client.email), assistantToken = await login(assistant.email), demoToken = await login(demo.email);
-  check('logins technician / client / assistant / pmo', techToken && clientToken && assistantToken && demoToken);
+  check('logins technician / client / assistant / demo', techToken && clientToken && assistantToken && demoToken);
 
   console.log('\n3. Refus pour Client, Technicien, Assistant (lectures et écritures)');
   const reads = ['/tickets', '/users', '/solutions', '/contracts', '/sites', '/equipment', '/equipment-softs', '/type-supports'];
@@ -93,9 +96,10 @@ async function createUser(pmo, authority) {
   check('relecture en base : plus aucun technicien (ligne pivot supprimée)', t.data.technicians.length === 0);
 
   console.log('\n5. Relecture du compte en base à chaque requête');
-  expectStatus('demo (pmo) : GET /tickets → 200', await call('GET', '/tickets', { token: demoToken }), 200);
-  expectStatus('PMO rétrograde demo en client', await call('PATCH', `/users/${demo.id}`, { token: pmoToken, body: { authority: 'client' } }), 200);
-  expectStatus('même token, rôle courant en base : GET /tickets → 403', await call('GET', '/tickets', { token: demoToken }), 403);
+  expectStatus('demo (technicien) : GET /client/tickets → 403', await call('GET', '/client/tickets', { token: demoToken }), 403);
+  expectStatus('PMO promeut demo en PMO → 409 (un seul PMO actif)', await call('PATCH', `/users/${demo.id}`, { token: pmoToken, body: { authority: 'pmo' } }), 409);
+  expectStatus('PMO change demo en client', await call('PATCH', `/users/${demo.id}`, { token: pmoToken, body: { authority: 'client' } }), 200);
+  expectStatus('même token, rôle courant en base : GET /client/tickets → 200', await call('GET', '/client/tickets', { token: demoToken }), 200);
   expectStatus('PMO désactive le technicien (valid=false)', await call('PATCH', `/users/${tech.id}`, { token: pmoToken, body: { valid: false } }), 200);
   expectStatus('token du technicien désactivé → 401 immédiat', await call('GET', '/tickets', { token: techToken }), 401);
   expectStatus('PMO supprime le client', await call('DELETE', `/users/${client.id}`, { token: pmoToken }), 200);

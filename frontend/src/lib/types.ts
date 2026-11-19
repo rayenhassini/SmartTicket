@@ -62,18 +62,44 @@ export interface Contract {
   businessId: string;
   type: string;
   nature: string;
+  // Champs complets (pages d'administration Phase A) — optionnels pour ne pas casser les usages « lookup ».
+  startDate?: string;
+  endDate?: string;
+  sla?: string;
+  dueDate?: string | null;
+  jourInfogerance?: string | null;
+  valid?: boolean;
+  montant?: string | null;
+  commercial?: User | null;
+  clients?: User[];
+  typeSupportLinks?: { id: Id; supportId: string; typeSupport?: TypeSupport | null }[];
+}
+
+export interface TypeSupport {
+  id: Id;
+  supportName: string;
+  supportEmail: string;
+  logoPath?: string | null;
+  creationDate?: string;
 }
 
 export interface Site {
   id: Id;
   nomSite: string;
   adresse: string;
+  longitude?: string | null;
+  latitude?: string | null;
+  equipment?: Equipment[];
+  equipmentSofts?: EquipmentSoft[];
 }
 
 export interface Equipment {
   id: Id;
   sn: string;
   nomPiece: string;
+  valid?: boolean;
+  startDateContract?: string;
+  endDateContract?: string;
 }
 
 export interface EquipmentSoft {
@@ -81,6 +107,9 @@ export interface EquipmentSoft {
   equipmentName: string;
   version?: string | null;
   constructure?: string | null;
+  valid?: boolean;
+  startDateContract?: string;
+  endDateContract?: string;
 }
 
 export interface Ticket {

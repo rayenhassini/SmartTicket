@@ -47,9 +47,9 @@ export default function ClientTicketsPage() {
             ))}
           </select>
         </div>
-        <button type="submit" className="btn-primary">Rechercher</button>
+        <button type="submit" className="btn btn-primary">Rechercher</button>
         {filtered && (
-          <button type="button" className="btn-secondary" onClick={() => { setQDraft(""); setQ(""); setStatus(""); }}>Réinitialiser</button>
+          <button type="button" className="btn btn-outline-secondary" onClick={() => { setQDraft(""); setQ(""); setStatus(""); }}>Réinitialiser</button>
         )}
       </form>
 

@@ -1,4 +1,7 @@
 import { Module } from '@nestjs/common';
+import { resolve } from 'path';
+import { APP_FILTER } from '@nestjs/core';
+import { DbConflictFilter } from './common/filters/db-conflict.filter';
 import { ConfigModule } from '@nestjs/config';
 import configuration from './config/configuration';
 import { validationSchema } from './config/validation.schema';
@@ -16,6 +19,7 @@ import { TeamsModule } from './teams/teams.module';
 import { MyTicketsModule } from './my-tickets/my-tickets.module';
 import { InvitationsModule } from './invitations/invitations.module';
 import { PasswordResetModule } from './password-reset/password-reset.module';
+import { PmoSuccessionModule } from './pmo-succession/pmo-succession.module';
 import { ClientInvitationsModule } from './client-invitations/client-invitations.module';
 import { ClientTicketsModule } from './client-tickets/client-tickets.module';
 
@@ -23,6 +27,8 @@ import { ClientTicketsModule } from './client-tickets/client-tickets.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      // `.env` du dossier courant, puis celui de backend/ (même si le serveur est lancé depuis un autre dossier).
+      envFilePath: ['.env', resolve(__dirname, '..', '.env')],
       load: [configuration],
       validationSchema,
     }),
@@ -41,7 +47,9 @@ import { ClientTicketsModule } from './client-tickets/client-tickets.module';
     MyTicketsModule,
     PasswordResetModule,
     ClientInvitationsModule,
+    PmoSuccessionModule,
     ClientTicketsModule,
   ],
+  providers: [{ provide: APP_FILTER, useClass: DbConflictFilter }],
 })
 export class AppModule {}

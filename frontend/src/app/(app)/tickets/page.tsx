@@ -7,18 +7,18 @@ import { listTickets } from "@/lib/api/tickets";
 import { errorMessage, formatDate, fullName, STATUS_LABELS } from "@/lib/format";
 import { TICKET_STATUSES, type Ticket } from "@/lib/types";
 import { EmptyState, ErrorBanner, PageHeader, Spinner, StatusBadge } from "@/components/ui";
+import { peek, track } from "@/lib/swr";
 
 export default function TicketsPage() {
   const router = useRouter();
-  const [tickets, setTickets] = useState<Ticket[] | null>(null);
+  const [tickets, setTickets] = useState<Ticket[] | null>(() => peek(listTickets));
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState("");
   const [search, setSearch] = useState("");
 
   const load = useCallback(() => {
     setError(null);
-    setTickets(null);
-    listTickets().then(setTickets).catch((e) => setError(errorMessage(e)));
+    track(listTickets).then(setTickets).catch((e) => setError(errorMessage(e)));
   }, []);
   useEffect(load, [load]);
 
@@ -36,7 +36,7 @@ export default function TicketsPage() {
     <div>
       <PageHeader
         title="Tickets"
-        actions={<Link href="/tickets/new" className="btn-primary">Nouveau ticket</Link>}
+        actions={<Link href="/tickets/new" className="btn btn-primary">Nouveau ticket</Link>}
       />
 
       <div className="mb-4 flex flex-wrap gap-3">
